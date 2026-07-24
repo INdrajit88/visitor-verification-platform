@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visitor Verification Platform | Midnight Network</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --card-bg: rgba(23, 31, 51, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --primary-purple: #8b5cf6;
+      --primary-cyan: #06b6d4;
+      --accent-glow: rgba(139, 92, 246, 0.25);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --success-green: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--primary-purple), var(--primary-cyan));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .brand-text h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .badge {
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: #c4b5fd;
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: rgba(11, 15, 25, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary-purple);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.85rem;
+      background: linear-gradient(135deg, var(--primary-purple), #7c3aed);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.9rem;
+    }
+
+    .status-item:last-child {
+      border-bottom: none;
+    }
+
+    .status-label {
+      color: var(--text-muted);
+    }
+
+    .status-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      color: #e2e8f0;
+    }
+
+    .log-box {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: #34d399;
+      max-height: 180px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="brand-logo">VVP</div>
+        <div class="brand-text">
+          <h1>Visitor Verification Platform</h1>
+          <p>Zero-Knowledge Anonymous Check-Ins on Midnight</p>
+        </div>
+      </div>
+      <div class="badge">Preprod Testnet</div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h2>🔒 Private Visitor Verification</h2>
+        <form id="verifyForm">
+          <div class="form-group">
+            <label for="verifierInput">Venue / Verifier ID</label>
+            <input type="text" id="verifierInput" value="venue_stadium_gate_a" placeholder="Enter venue ID">
+          </div>
+          <div class="form-group">
+            <label for="passcodeInput">Private Passcode (Witness)</label>
+            <input type="password" id="passcodeInput" value="my_secret_visitor_passcode_99" placeholder="Enter private passcode">
+          </div>
+          <button type="submit" class="btn" id="verifyBtn">Generate ZK Proof & Check In</button>
+        </form>
+        <div class="log-box" id="logBox">
+          > System initialized.<br>
+          > Ready to generate zero-knowledge visitor proof.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📊 Public Ledger State</h2>
+        <div class="status-item">
+          <span class="status-label">Contract Address</span>
+          <span class="status-value" id="contractAddr">TBD</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Verified Visitor Count</span>
+          <span class="status-value" id="visitorCount">0</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Active Verifier ID</span>
+          <span class="status-value" id="activeVerifier">venue_stadium_gate_a</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Last Disclosed Commitment</span>
+          <span class="status-value" id="lastCommitment">0x0000...0000</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Proof Server Status</span>
+          <span class="status-value" style="color: #10b981;">Online (Port 6300)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/index.ts"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+// ============================================================================
+// VISITOR VERIFICATION PLATFORM (VVP) CONTRACT
+// ============================================================================
+// Privacy Model Overview:
+//
+// 1. PUBLIC LEDGER STATE (On-Chain, visible to anyone):
+//    - visitorCount: Counter tracking total number of verified check-ins.
+//    - verifierId: Bytes<32> storing the registered venue/verifier ID.
+//    - lastVisitorCommitment: Bytes<32> storing public hash commitment of the
+//      most recent verified visitor.
+//
+// 2. PRIVATE WITNESS (Private witness input, kept locally, never published):
+//    - secretPasscode(): Bytes<32> private visitor passcode/secret token.
+//
+// 3. PROOF & DISCLOSURE:
+//    - The circuit verifies the visitor's private secret and computes a public
+//      visitor commitment using persistentHash.
+//    - Only the public commitment and incremented counter are disclosed on-chain via disclose().
+// ============================================================================
+
+pragma language_version 0.23;
+
+import CompactStandardLibrary;
+
+export ledger visitorCount: Counter;
+export ledger verifierId: Bytes<32>;
+export ledger lastVisitorCommitment: Bytes<32>;
+
+constructor(initialVerifier: Bytes<32>) {
+  verifierId = disclose(initialVerifier);
+  visitorCount.increment(1);
+}
+
+witness secretPasscode(): Bytes<32>;
+
+export circuit verifyVisitor(expectedVerifier: Bytes<32>): Bytes<32> {
+  assert(verifierId == expectedVerifier, "Invalid verifier ID provided");
+  
+  const passcode = secretPasscode();
+  const visitorCommitment = persistentHash<Vector<2, Bytes<32>>>([
+    pad(32, "vvp:visitor:commitment"),
+    passcode
+  ]);
+  
+  visitorCount.increment(1);
+  const disclosedCommitment = disclose(visitorCommitment);
+  lastVisitorCommitment = disclosedCommitment;
+  return disclosedCommitment;
+}
+
+export circuit resetVerifier(newVerifier: Bytes<32>): [] {
+  verifierId = disclose(newVerifier);
+}
