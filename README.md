@@ -1,7 +1,7 @@
 # Visitor Verification Platform (VVP)
 > A privacy-preserving zero-knowledge visitor verification platform built on the Midnight Network using Compact smart contracts.
 
-[![Midnight Preprod](https://img.shields.io/badge/Network-Midnight_Preprod-8b5cf6?style=flat-square)](https://indexer.preprod.midnight.network)
+[![Midnight Preprod](https://img.shields.io/badge/Network-Midnight_Preprod-8b5cf6?style=flat-square)](https://explorer.preprod.midnight.network)
 [![Compact Language](https://img.shields.io/badge/Compact-v0.5.1-06b6d4?style=flat-square)](https://midnight.network)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v22.23.1-10b981?style=flat-square)](https://nodejs.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.style=flat-square)](LICENSE)
@@ -11,7 +11,7 @@
 ## Contract Address
 | Network  | Contract Address | Verification / Explorer Link |
 |----------|------------------|------------------------------|
-| **Preprod** | `0x187ab583926a5ff2e4819242a95edc8dfa8ff784` | [Verify Contract on Midnight Preprod Indexer](https://indexer.preprod.midnight.network) |
+| **Preprod** | `0x187ab583926a5ff2e4819242a95edc8dfa8ff784` | [Verify Contract on Midnight Preprod Explorer](https://explorer.preprod.midnight.network) |
 
 > [!NOTE]
 > Deployed contract `0x187ab583926a5ff2e4819242a95edc8dfa8ff784` is live on Midnight Preprod Testnet and connected to the local ZK Proof Server running on port `6300`.
@@ -118,4 +118,4 @@ VVP leverages Midnight's zero-knowledge smart contract framework (written in Com
 ---
 
 ## Screenshots
-![Visitor Verification Platform Screenshot](<Screenshot 2026-07-25 at 2.44.38 AM-1.png>)
+![Visitor Verification Platform Screenshot](screenshot.png)
