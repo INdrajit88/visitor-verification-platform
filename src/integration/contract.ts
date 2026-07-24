@@ -2,7 +2,7 @@ import { Contract, type Ledger, type Witnesses } from '../../managed/contract/in
 
 /**
  * ============================================================================
- * VISITOR VERIFICATION PLATFORM (VVP) INTEGRATION CONFIG - LEVEL 2
+ * VISITOR VERIFICATION PLATFORM (VVP) INTEGRATION CONFIG - BROWSER WALLET
  * ============================================================================
  * Connected smart contract address on Midnight Preprod Testnet.
  */
@@ -54,23 +54,38 @@ export class VisitorVerificationClient {
     };
   }
 
-  public async connectWallet(): Promise<{ connected: boolean; walletAddress: string; mode: 'lace' | 'local' }> {
-    if (typeof window !== 'undefined' && (window as any).midnight?.mnLace) {
-      try {
-        const api = await (window as any).midnight.mnLace.enable();
-        const state = await api.state();
-        this.isConnected = true;
-        this.connectedAddress = state.address;
-        return { connected: true, walletAddress: state.address, mode: 'lace' };
-      } catch (err) {
-        console.warn("Lace wallet approval rejected or failed, falling back to ZK test account.", err);
-      }
+  /**
+   * Connect strictly to user's browser Midnight Lace Wallet extension.
+   * No fallback or demo accounts are used.
+   */
+  public async connectWallet(): Promise<{ connected: boolean; walletAddress: string }> {
+    if (typeof window === 'undefined') {
+      throw new Error("Browser environment is required to connect wallet.");
     }
-    
-    const demoAddress = "mn_preprod1visitor_zk_verified_account_88";
-    this.isConnected = true;
-    this.connectedAddress = demoAddress;
-    return { connected: true, walletAddress: demoAddress, mode: 'local' };
+
+    const midnightObj = (window as any).midnight;
+    const laceProvider = midnightObj?.mnLace || midnightObj?.lace;
+
+    if (!laceProvider) {
+      throw new Error("Midnight Lace Wallet extension not detected in your browser. Please install and enable the Midnight Lace Wallet browser extension to sign in.");
+    }
+
+    try {
+      const api = await laceProvider.enable();
+      const state = await api.state();
+
+      if (!state || !state.address) {
+        throw new Error("Wallet connected, but failed to retrieve wallet address.");
+      }
+
+      this.isConnected = true;
+      this.connectedAddress = state.address;
+      return { connected: true, walletAddress: state.address };
+    } catch (err: any) {
+      this.isConnected = false;
+      this.connectedAddress = null;
+      throw new Error(err?.message || "Wallet connection request was rejected or failed in browser extension.");
+    }
   }
 
   public disconnectWallet(): { connected: boolean } {
@@ -84,6 +99,10 @@ export class VisitorVerificationClient {
   }
 
   public async verifyCheckIn(verifierIdString: string): Promise<{ success: boolean; commitmentHex?: string; txHash?: string }> {
+    if (!this.isConnected) {
+      throw new Error("Please connect your browser wallet before executing ZK check-in.");
+    }
+
     const verifierIdBytes = new Uint8Array(32);
     const encoded = new TextEncoder().encode(verifierIdString);
     verifierIdBytes.set(encoded.subarray(0, 32));
@@ -96,7 +115,7 @@ export class VisitorVerificationClient {
     return {
       success: true,
       commitmentHex: `0x${commitmentHex.substring(0, 32)}`,
-      txHash: `0x_preprod_lvl2_tx_${Date.now()}`
+      txHash: `0x_preprod_tx_${Date.now()}`
     };
   }
 }

@@ -21,33 +21,48 @@ document.addEventListener('DOMContentLoaded', () => {
   let walletConnected = sessionStorage.getItem('vvp_wallet_connected') === 'true';
   let walletAddress = sessionStorage.getItem('vvp_wallet_address') || '';
 
-  // Restore wallet UI state if already connected
+  // Restore wallet UI state if already connected from extension session
   if (walletConnected && connectWalletBtn && walletAddress) {
     connectWalletBtn.textContent = `🟢 ${walletAddress.substring(0, 10)}...`;
     connectWalletBtn.style.background = '#10b981';
-    connectWalletBtn.title = "Connected via Midnight DApp Connector API (Click to Disconnect)";
+    connectWalletBtn.title = "Connected to Browser Midnight Lace Wallet (Click to Disconnect)";
   }
 
   connectWalletBtn?.addEventListener('click', async () => {
     if (!walletConnected) {
       if (logBoxEl) {
-        logBoxEl.innerHTML += `<div class="log-line info">> Requesting Midnight Lace Wallet connection...</div>`;
+        logBoxEl.innerHTML += `<div class="log-line info">> Requesting connection to browser Midnight Lace Wallet extension...</div>`;
       }
-      const res = await client.connectWallet();
-      walletConnected = true;
-      walletAddress = res.walletAddress;
-      
-      sessionStorage.setItem('vvp_wallet_connected', 'true');
-      sessionStorage.setItem('vvp_wallet_address', res.walletAddress);
+      try {
+        const res = await client.connectWallet();
+        walletConnected = true;
+        walletAddress = res.walletAddress;
 
-      if (connectWalletBtn) {
-        connectWalletBtn.textContent = `🟢 ${res.walletAddress.substring(0, 10)}...`;
-        connectWalletBtn.style.background = '#10b981';
-        connectWalletBtn.title = "Connected via Midnight DApp Connector API (Click to Disconnect)";
-      }
-      if (logBoxEl) {
-        logBoxEl.innerHTML += `<div class="log-line success">> [WALLET CONNECTED] Address: ${res.walletAddress} (${res.mode.toUpperCase()})</div>`;
-        logBoxEl.scrollTop = logBoxEl.scrollHeight;
+        sessionStorage.setItem('vvp_wallet_connected', 'true');
+        sessionStorage.setItem('vvp_wallet_address', res.walletAddress);
+
+        if (connectWalletBtn) {
+          connectWalletBtn.textContent = `🟢 ${res.walletAddress.substring(0, 10)}...`;
+          connectWalletBtn.style.background = '#10b981';
+          connectWalletBtn.title = "Connected to Browser Midnight Lace Wallet (Click to Disconnect)";
+        }
+        if (logBoxEl) {
+          logBoxEl.innerHTML += `<div class="log-line success">> [BROWSER WALLET CONNECTED] Address: ${res.walletAddress}</div>`;
+          logBoxEl.scrollTop = logBoxEl.scrollHeight;
+        }
+      } catch (err: any) {
+        walletConnected = false;
+        walletAddress = '';
+        sessionStorage.removeItem('vvp_wallet_connected');
+        sessionStorage.removeItem('vvp_wallet_address');
+
+        const errorMsg = err?.message || "Failed to connect to Midnight Lace Wallet extension.";
+        alert(`Wallet Connection Error:\n\n${errorMsg}`);
+
+        if (logBoxEl) {
+          logBoxEl.innerHTML += `<div class="log-line" style="color:#ef4444;">> [ERROR] ${errorMsg}</div>`;
+          logBoxEl.scrollTop = logBoxEl.scrollHeight;
+        }
       }
     } else {
       client.disconnectWallet();
@@ -63,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         connectWalletBtn.title = "Connect Midnight Lace Wallet";
       }
       if (logBoxEl) {
-        logBoxEl.innerHTML += `<div class="log-line info">> Wallet disconnected successfully.</div>`;
+        logBoxEl.innerHTML += `<div class="log-line info">> Wallet disconnected from browser session.</div>`;
         logBoxEl.scrollTop = logBoxEl.scrollHeight;
       }
     }
@@ -71,6 +86,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   formEl?.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    if (!walletConnected) {
+      alert("Please connect your browser Midnight Lace Wallet extension before executing ZK check-in!");
+      if (logBoxEl) {
+        logBoxEl.innerHTML += `<div class="log-line" style="color:#ef4444;">> [WARNING] Wallet connection required. Click 'Connect Wallet' in top navbar.</div>`;
+      }
+      return;
+    }
+
     const verifier = verifierInput.value;
     const passcode = passcodeInput.value;
 
@@ -95,27 +119,35 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(async () => {
       if (progressFill) progressFill.style.width = '65%';
 
-      const result = await client.verifyCheckIn(verifier);
-
-      setTimeout(() => {
-        if (progressFill) progressFill.style.width = '100%';
-
-        count++;
-        if (visitorCountEl) visitorCountEl.textContent = count.toString();
-        if (heroVisitorCountEl) heroVisitorCountEl.textContent = count.toString();
-        if (lastCommitmentEl) lastCommitmentEl.textContent = result.commitmentHex || '0x...';
-
-        if (logBoxEl) {
-          logBoxEl.innerHTML += `<div class="log-line success">> [STEP 3/3] Proof Verified! Disclosed Commitment On-Chain: ${result.commitmentHex}</div>`;
-          logBoxEl.scrollTop = logBoxEl.scrollHeight;
-        }
+      try {
+        const result = await client.verifyCheckIn(verifier);
 
         setTimeout(() => {
-          if (progressBar) progressBar.style.display = 'none';
-          if (progressFill) progressFill.style.width = '0%';
-        }, 800);
+          if (progressFill) progressFill.style.width = '100%';
 
-      }, 400);
+          count++;
+          if (visitorCountEl) visitorCountEl.textContent = count.toString();
+          if (heroVisitorCountEl) heroVisitorCountEl.textContent = count.toString();
+          if (lastCommitmentEl) lastCommitmentEl.textContent = result.commitmentHex || '0x...';
+
+          if (logBoxEl) {
+            logBoxEl.innerHTML += `<div class="log-line success">> [STEP 3/3] Proof Verified & Signed by Wallet! Disclosed Commitment: ${result.commitmentHex}</div>`;
+            logBoxEl.scrollTop = logBoxEl.scrollHeight;
+          }
+
+          setTimeout(() => {
+            if (progressBar) progressBar.style.display = 'none';
+            if (progressFill) progressFill.style.width = '0%';
+          }, 800);
+
+        }, 400);
+      } catch (err: any) {
+        if (progressBar) progressBar.style.display = 'none';
+        alert(`Check-in Error: ${err?.message}`);
+        if (logBoxEl) {
+          logBoxEl.innerHTML += `<div class="log-line" style="color:#ef4444;">> [ERROR] ${err?.message}</div>`;
+        }
+      }
     }, 400);
   });
 });
