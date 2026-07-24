@@ -1,58 +1,111 @@
 # Visitor Verification Platform (VVP)
-> A privacy-preserving zero-knowledge visitor verification system built on the Midnight Network using Compact.
+> A privacy-preserving zero-knowledge visitor verification platform built on the Midnight Network using Compact smart contracts.
+
+[![Midnight Preprod](https://img.shields.io/badge/Network-Midnight_Preprod-8b5cf6?style=flat-square)](https://indexer.preprod.midnight.network)
+[![Compact Language](https://img.shields.io/badge/Compact-v0.5.1-06b6d4?style=flat-square)](https://midnight.network)
+[![Node.js Version](https://img.shields.io/badge/Node.js-v22.23.1-10b981?style=flat-square)](https://nodejs.org)
+[![License](https://img.shields.io/badge/License-MIT-blue.style=flat-square)](LICENSE)
+
+---
 
 ## Contract Address
-| Network  | Address                          |
-|----------|-----------------------------------|
-| Preprod  | `0x187ab583926a5ff2e4819242a95edc8dfa8ff784` |
+| Network  | Contract Address | Verification / Explorer Link |
+|----------|------------------|------------------------------|
+| **Preprod** | `0x187ab583926a5ff2e4819242a95edc8dfa8ff784` | [Verify Contract on Midnight Preprod Indexer](https://indexer.preprod.midnight.network) |
+
+> [!NOTE]
+> Deployed contract `0x187ab583926a5ff2e4819242a95edc8dfa8ff784` is live on Midnight Preprod Testnet and connected to the local ZK Proof Server running on port `6300`.
+
+---
 
 ## What This Does
-The Visitor Verification Platform (VVP) allows visitors to verify their right to access physical or digital venues (e.g., stadium gates, office buildings, exclusive events) without exposing their raw visitor credentials or private passcodes on-chain. The smart contract validates that the visitor holds a valid passcode for a given venue, records an incremented verified check-in counter on the public ledger, and stores a cryptographic commitment hash of the verification event.
+The **Visitor Verification Platform (VVP)** enables visitors to verify their access authorization for physical or digital venues (e.g. corporate offices, stadium gates, VIP lounges, restricted event zones) without leaking sensitive personal credentials or unencrypted passcodes onto the public blockchain.
+
+Using Zero-Knowledge cryptography on Midnight:
+1. The smart contract validates that a visitor holds a valid venue passcode inside a Compact ZK circuit.
+2. An incremented public check-in counter (`visitorCount`) and commitment hash (`lastVisitorCommitment`) are recorded on-chain.
+3. The visitor's private passcode (`secretPasscode`) remains strictly on the visitor's local device as a private witness.
+
+---
 
 ## Privacy Model
 - **What is PUBLIC (on-chain, visible to anyone)**:
-  - `visitorCount`: Total number of verified visitor check-ins across the venue.
-  - `verifierId`: The active venue or verifier ID hash.
-  - `lastVisitorCommitment`: Cryptographic commitment generated and disclosed on-chain during check-in.
-- **What is PRIVATE (private witness, never on-chain)**:
-  - `secretPasscode()`: The visitor's private secret token/passcode supplied directly as a private witness into the Zero-Knowledge circuit. It is kept locally and never transmitted or recorded on-chain.
+  - `visitorCount`: Total count of verified visitor check-ins across the venue.
+  - `verifierId`: Bytes<32> identifier representing the active venue or gate verifier.
+  - `lastVisitorCommitment`: Cryptographic commitment hash generated and disclosed via `disclose()` during verification.
+- **What is PRIVATE (private witness, kept locally)**:
+  - `secretPasscode()`: Private visitor passcode/token supplied directly into the Zero-Knowledge circuit. It is never written to the ledger or broadcast over the network.
 - **What the user PROVES without revealing**:
-  - The visitor proves they possess a valid passcode corresponding to the registered verifier without revealing the raw passcode value itself.
+  - The visitor proves possession of a valid passcode corresponding to the registered verifier without revealing the raw passcode string itself.
+
+---
 
 ## Tech Stack
-- Midnight network, Compact language (`0.5.1`), Node.js v22 (`v22.23.1`), Docker (Proof Server port 6300).
+- **Network**: Midnight Testnet (Preprod)
+- **Smart Contract Language**: Compact (`0.5.1`)
+- **Runtime & Toolchain**: Node.js v22 (`v22.23.1`), TypeScript, Vitest
+- **Zero-Knowledge Infrastructure**: Midnight Proof Server (`midnightntwrk/proof-server:8.1.0` on port 6300)
+
+---
 
 ## Prerequisites
-- Node.js v22 installed (`nvm use 22`)
-- Docker running locally
-- Compact compiler (`@midnight-ntwrk/compact-compiler`)
-- Running Midnight proof server container (`midnightntwrk/proof-server:8.1.0` on port 6300)
-
-## Setup
-1. Clone the repository:
+Before running or testing locally, ensure you have:
+1. **Node.js v22** (`nvm use 22`)
+2. **Docker Desktop** running locally
+3. **Compact Compiler** installed globally:
    ```bash
-   git clone <repository-url>
-   cd VVP
+   npm install -g @midnight-ntwrk/compact-compiler
    ```
-2. Switch to Node v22 and install dependencies:
+
+---
+
+## Setup & Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/INdrajit88/visitor-verification-platform.git
+   cd visitor-verification-platform
+   ```
+
+2. **Set Node version and install dependencies**:
    ```bash
    nvm use 22
    npm install
    ```
-3. Ensure the Midnight proof server is running on port 6300:
+
+3. **Start the Midnight Proof Server container**:
    ```bash
    docker run -d -p 6300:6300 midnightntwrk/proof-server:8.1.0
    ```
-4. Compile the Compact contract:
+
+4. **Compile the Compact contract**:
    ```bash
    compact compile contracts/counter.compact managed
    ```
 
+5. **Deploy contract to Preprod (manual trigger)**:
+   ```bash
+   NODE_OPTIONS="--max-old-space-size=12288" npm run deploy
+   ```
+
+---
+
 ## Run Tests
-Run the automated test suite covering circuit logic, state transitions, and zero-knowledge privacy assertions:
+Execute the automated test suite covering Zero-Knowledge circuit execution, state transitions, and private witness protection:
+
 ```bash
 npm test
 ```
+
+Expected Output:
+```text
+ ✓ tests/counter.test.ts (3 tests) 7ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+```
+
+---
 
 ## Initial Idea
 The Visitor Verification Platform (VVP) was conceived to address critical privacy risks in modern physical and digital access management systems. Traditional visitor check-in mechanisms force guests to surrender sensitive personal data (such as government IDs, phone numbers, or unencrypted access codes) to centralized venue databases, exposing visitors to data breaches and unwanted tracking.
@@ -62,5 +115,7 @@ VVP leverages Midnight's zero-knowledge smart contract framework (written in Com
 - **Verifiable Auditability**: Venues maintain an immutable, on-chain record of total verified check-ins and cryptographic commitment hashes without managing high-risk PII databases.
 - **Real-World Applications**: Ideal for corporate office guest check-ins, VIP event access control, restricted facility management, and privacy-first venue ticketing.
 
+---
+
 ## Screenshots
-![alt text](<Screenshot 2026-07-25 at 2.44.38 AM.png>)
+![Visitor Verification Platform Screenshot](<Screenshot 2026-07-25 at 2.44.38 AM-1.png>)
