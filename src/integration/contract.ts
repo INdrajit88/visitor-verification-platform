@@ -2,7 +2,7 @@ import { Contract, type Ledger, type Witnesses } from '../../managed/contract/in
 
 /**
  * ============================================================================
- * VISITOR VERIFICATION PLATFORM (VVP) INTEGRATION CONFIG
+ * VISITOR VERIFICATION PLATFORM (VVP) INTEGRATION CONFIG - LEVEL 2
  * ============================================================================
  * Connected smart contract address on Midnight Preprod Testnet.
  */
@@ -17,6 +17,7 @@ export const NETWORK_CONFIG = {
 
 export interface VisitorPrivateState {
   secretPasscode: Uint8Array;
+  visitorNonce: Uint8Array;
 }
 
 export class VisitorVerificationClient {
@@ -42,12 +43,18 @@ export class VisitorVerificationClient {
       secretPasscode: (context) => {
         const passcode = this.currentPasscode || new Uint8Array(32);
         return [context.privateState, passcode];
+      },
+      visitorNonce: (context) => {
+        const nonce = new Uint8Array(32);
+        if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+          crypto.getRandomValues(nonce);
+        }
+        return [context.privateState, nonce];
       }
     };
   }
 
   public async connectWallet(): Promise<{ connected: boolean; walletAddress: string; mode: 'lace' | 'local' }> {
-    // Attempt connecting to browser Lace Wallet extension
     if (typeof window !== 'undefined' && (window as any).midnight?.mnLace) {
       try {
         const api = await (window as any).midnight.mnLace.enable();
@@ -60,7 +67,6 @@ export class VisitorVerificationClient {
       }
     }
     
-    // Local ZK Test Account mode
     const demoAddress = "mn_preprod1visitor_zk_verified_account_88";
     this.isConnected = true;
     this.connectedAddress = demoAddress;
@@ -90,7 +96,7 @@ export class VisitorVerificationClient {
     return {
       success: true,
       commitmentHex: `0x${commitmentHex.substring(0, 32)}`,
-      txHash: `0x_preprod_tx_${Date.now()}`
+      txHash: `0x_preprod_lvl2_tx_${Date.now()}`
     };
   }
 }

@@ -5,7 +5,7 @@ const _descriptor_0 = new __compactRuntime.CompactTypeBytes(32);
 
 const _descriptor_1 = new __compactRuntime.CompactTypeUnsignedInteger(65535n, 2);
 
-const _descriptor_2 = new __compactRuntime.CompactTypeVector(2, _descriptor_0);
+const _descriptor_2 = new __compactRuntime.CompactTypeVector(3, _descriptor_0);
 
 const _descriptor_3 = new __compactRuntime.CompactTypeUnsignedInteger(18446744073709551615n, 8);
 
@@ -62,6 +62,9 @@ export class Contract {
     if (typeof(witnesses_0.secretPasscode) !== 'function') {
       throw new __compactRuntime.CompactError('first (witnesses) argument to Contract constructor does not contain a function-valued field named secretPasscode');
     }
+    if (typeof(witnesses_0.visitorNonce) !== 'function') {
+      throw new __compactRuntime.CompactError('first (witnesses) argument to Contract constructor does not contain a function-valued field named visitorNonce');
+    }
     this.witnesses = witnesses_0;
     this.circuits = {
       verifyVisitor: (...args_1) => {
@@ -73,14 +76,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('verifyVisitor',
                                      'argument 1 (as invoked from Typescript)',
-                                     'counter.compact line 36 char 1',
+                                     'counter.compact line 38 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(expectedVerifier_0.buffer instanceof ArrayBuffer && expectedVerifier_0.BYTES_PER_ELEMENT === 1 && expectedVerifier_0.length === 32)) {
           __compactRuntime.typeError('verifyVisitor',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'counter.compact line 36 char 1',
+                                     'counter.compact line 38 char 1',
                                      'Bytes<32>',
                                      expectedVerifier_0)
         }
@@ -109,14 +112,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('resetVerifier',
                                      'argument 1 (as invoked from Typescript)',
-                                     'counter.compact line 51 char 1',
+                                     'counter.compact line 56 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(newVerifier_0.buffer instanceof ArrayBuffer && newVerifier_0.BYTES_PER_ELEMENT === 1 && newVerifier_0.length === 32)) {
           __compactRuntime.typeError('resetVerifier',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'counter.compact line 51 char 1',
+                                     'counter.compact line 56 char 1',
                                      'Bytes<32>',
                                      newVerifier_0)
         }
@@ -167,7 +170,7 @@ export class Contract {
     if (!(initialVerifier_0.buffer instanceof ArrayBuffer && initialVerifier_0.BYTES_PER_ELEMENT === 1 && initialVerifier_0.length === 32)) {
       __compactRuntime.typeError('Contract state constructor',
                                  'argument 1 (argument 2 as invoked from Typescript)',
-                                 'counter.compact line 29 char 1',
+                                 'counter.compact line 30 char 1',
                                  'Bytes<32>',
                                  initialVerifier_0)
     }
@@ -260,7 +263,24 @@ export class Contract {
     if (!(result_0.buffer instanceof ArrayBuffer && result_0.BYTES_PER_ELEMENT === 1 && result_0.length === 32)) {
       __compactRuntime.typeError('secretPasscode',
                                  'return value',
-                                 'counter.compact line 34 char 1',
+                                 'counter.compact line 35 char 1',
+                                 'Bytes<32>',
+                                 result_0)
+    }
+    partialProofData.privateTranscriptOutputs.push({
+      value: _descriptor_0.toValue(result_0),
+      alignment: _descriptor_0.alignment()
+    });
+    return result_0;
+  }
+  _visitorNonce_0(context, partialProofData) {
+    const witnessContext_0 = __compactRuntime.createWitnessContext(ledger(context.currentQueryContext.state), context.currentPrivateState, context.currentQueryContext.address);
+    const [nextPrivateState_0, result_0] = this.witnesses.visitorNonce(witnessContext_0);
+    context.currentPrivateState = nextPrivateState_0;
+    if (!(result_0.buffer instanceof ArrayBuffer && result_0.BYTES_PER_ELEMENT === 1 && result_0.length === 32)) {
+      __compactRuntime.typeError('visitorNonce',
+                                 'return value',
+                                 'counter.compact line 36 char 1',
                                  'Bytes<32>',
                                  result_0)
     }
@@ -286,8 +306,10 @@ export class Contract {
                                           expectedVerifier_0),
                             'Invalid verifier ID provided');
     const passcode_0 = this._secretPasscode_0(context, partialProofData);
+    const nonce_0 = this._visitorNonce_0(context, partialProofData);
     const visitorCommitment_0 = this._persistentHash_0([new Uint8Array([118, 118, 112, 58, 118, 105, 115, 105, 116, 111, 114, 58, 99, 111, 109, 109, 105, 116, 109, 101, 110, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-                                                        passcode_0]);
+                                                        passcode_0,
+                                                        nonce_0]);
     const tmp_0 = 1n;
     __compactRuntime.queryLedgerState(context,
                                       partialProofData,
@@ -396,7 +418,9 @@ export function ledger(stateOrChargedState) {
 const _emptyContext = {
   currentQueryContext: new __compactRuntime.QueryContext(new __compactRuntime.ContractState().data, __compactRuntime.dummyContractAddress())
 };
-const _dummyContract = new Contract({ secretPasscode: (...args) => undefined });
+const _dummyContract = new Contract({
+  secretPasscode: (...args) => undefined, visitorNonce: (...args) => undefined
+});
 export const pureCircuits = {};
 export const contractReferenceLocations =
   { tag: 'publicLedgerArray', indices: { } };

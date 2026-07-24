@@ -1,5 +1,5 @@
 // ============================================================================
-// VISITOR VERIFICATION PLATFORM (VVP) CONTRACT
+// VISITOR VERIFICATION PLATFORM (VVP) CONTRACT - LEVEL 2 ENHANCED
 // ============================================================================
 // Privacy Model Overview:
 //
@@ -9,13 +9,14 @@
 //    - lastVisitorCommitment: Bytes<32> storing public hash commitment of the
 //      most recent verified visitor.
 //
-// 2. PRIVATE WITNESS (Private witness input, kept locally, never published):
+// 2. PRIVATE WITNESSES (Kept strictly on local visitor device):
 //    - secretPasscode(): Bytes<32> private visitor passcode/secret token.
+//    - visitorNonce(): Bytes<32> private visitor entropy nonce for proof randomness.
 //
 // 3. PROOF & DISCLOSURE:
-//    - The circuit verifies the visitor's private secret and computes a public
-//      visitor commitment using persistentHash.
-//    - Only the public commitment and incremented counter are disclosed on-chain via disclose().
+//    - The circuit verifies the visitor's private secret and computes a multi-input
+//      visitor commitment using persistentHash across the passcode and nonce.
+//    - Only the commitment hash and incremented counter are disclosed on-chain via disclose().
 // ============================================================================
 
 pragma language_version 0.23;
@@ -32,14 +33,18 @@ constructor(initialVerifier: Bytes<32>) {
 }
 
 witness secretPasscode(): Bytes<32>;
+witness visitorNonce(): Bytes<32>;
 
 export circuit verifyVisitor(expectedVerifier: Bytes<32>): Bytes<32> {
   assert(verifierId == expectedVerifier, "Invalid verifier ID provided");
   
   const passcode = secretPasscode();
-  const visitorCommitment = persistentHash<Vector<2, Bytes<32>>>([
+  const nonce = visitorNonce();
+
+  const visitorCommitment = persistentHash<Vector<3, Bytes<32>>>([
     pad(32, "vvp:visitor:commitment"),
-    passcode
+    passcode,
+    nonce
   ]);
   
   visitorCount.increment(1);

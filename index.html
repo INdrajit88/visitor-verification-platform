@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visitor Verification Platform | Zero-Knowledge Check-In</title>
+  <title>Visitor Verification Platform | Level 2 Multi-Witness ZK Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -11,8 +11,8 @@
   <style>
     .hero-section {
       text-align: center;
-      padding: 4rem 1.5rem 3rem;
-      max-width: 900px;
+      padding: 3.5rem 1.5rem 2.5rem;
+      max-width: 950px;
       margin: 0 auto;
     }
 
@@ -103,15 +103,11 @@
     }
 
     @media (max-width: 900px) {
-      .workflow-grid {
-        grid-template-columns: 1fr 1fr;
-      }
+      .workflow-grid { grid-template-columns: 1fr 1fr; }
     }
 
     @media (max-width: 600px) {
-      .workflow-grid {
-        grid-template-columns: 1fr;
-      }
+      .workflow-grid { grid-template-columns: 1fr; }
     }
 
     .step-card {
@@ -157,7 +153,6 @@
       line-height: 1.5;
     }
 
-    /* Features Section */
     .features-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -166,9 +161,7 @@
     }
 
     @media (max-width: 900px) {
-      .features-grid {
-        grid-template-columns: 1fr;
-      }
+      .features-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -207,13 +200,13 @@
   <main class="animated-entry">
     <section class="hero-section">
       <div class="hero-badge">
-        <span>⚡</span> Powered by Midnight Compact ZK Circuits
+        <span>🏆</span> Level 2 Enhanced: Multi-Witness ZK Architecture
       </div>
       <h1 class="hero-heading">
-        Privacy-Preserving <span>Visitor Verification</span> Platform
+        Privacy-Preserving <span>Multi-Witness Visitor Verification</span>
       </h1>
       <p class="hero-subtext">
-        Verify venue access authorization in zero-knowledge. Visitors prove possession of a valid venue passcode without revealing credentials, personal data, or raw secrets on-chain.
+        Verify venue access authorization in zero-knowledge. Visitors prove possession of a valid venue passcode and entropy nonce using Compact ZK circuits without disclosing secrets or raw credentials on-chain.
       </p>
       <div class="cta-buttons">
         <a href="/checkin.html" class="btn-primary">Launch Check-In Portal →</a>
@@ -224,33 +217,33 @@
     <!-- ZK Proof Workflow Steps -->
     <section>
       <div style="text-align: center; margin-bottom: 1.5rem;">
-        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--slate-900);">How Zero-Knowledge Check-In Works</h2>
-        <p style="color: var(--slate-600); font-size: 0.95rem;">Step-by-step verification pipeline executing in local proof server</p>
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--slate-900);">Level 2 Multi-Witness Pipeline</h2>
+        <p style="color: var(--slate-600); font-size: 0.95rem;">Executing in local proof server and Midnight JS SDK provider</p>
       </div>
 
       <div class="workflow-grid">
         <div class="step-card">
           <div class="step-num">1</div>
-          <div class="step-title">Private Witness Input</div>
-          <div class="step-desc">Visitor inputs passcode locally. The credential is kept strictly on the device as a private witness <code style="color:var(--amber-700);">secretPasscode()</code>.</div>
+          <div class="step-title">Multi-Witness Inputs</div>
+          <div class="step-desc">Passcode witness <code style="color:var(--amber-700);">secretPasscode()</code> and entropy witness <code style="color:var(--amber-700);">visitorNonce()</code> generated locally.</div>
         </div>
 
         <div class="step-card">
           <div class="step-num">2</div>
           <div class="step-title">Compact ZK Circuit</div>
-          <div class="step-desc">The local Midnight Proof Server (<code style="color:var(--amber-700);">port 6300</code>) runs circuit <code style="color:var(--amber-700);">verifyVisitor()</code>.</div>
+          <div class="step-desc">Midnight Proof Server (<code style="color:var(--amber-700);">port 6300</code>) runs circuit <code style="color:var(--amber-700);">verifyVisitor()</code> with multi-input persistent hash.</div>
         </div>
 
         <div class="step-card">
           <div class="step-num">3</div>
           <div class="step-title">Zero-Knowledge Proof</div>
-          <div class="step-desc">Generates a cryptographic proof verifying passcode validity without exposing the passcode string.</div>
+          <div class="step-desc">Generates a ZK proof verifying authorization without exposing passcode or nonce values.</div>
         </div>
 
         <div class="step-card">
           <div class="step-num">4</div>
           <div class="step-title">On-Chain Disclosure</div>
-          <div class="step-desc">Only the disclosed commitment hash and incremented <code style="color:var(--amber-700);">visitorCount</code> are recorded on Preprod.</div>
+          <div class="step-desc">Disclosed commitment hash and incremented <code style="color:var(--amber-700);">visitorCount</code> submitted to Preprod ledger.</div>
         </div>
       </div>
     </section>
@@ -261,11 +254,11 @@
         <div class="card-header">
           <div class="card-title">
             <div class="card-icon">🔒</div>
-            Complete Privacy
+            Dual Private Witness
           </div>
         </div>
         <p style="color: var(--slate-600); font-size: 0.9rem; line-height: 1.6;">
-          No unencrypted passwords, government IDs, or emails are ever written to the public ledger.
+          Protects credentials using multi-witness entropy vectors (<code style="font-size:0.8rem;">secretPasscode</code> + <code style="font-size:0.8rem;">visitorNonce</code>).
         </p>
       </div>
 
@@ -273,11 +266,11 @@
         <div class="card-header">
           <div class="card-title">
             <div class="card-icon">⚡</div>
-            Instant Verification
+            Midnight.js Integration
           </div>
         </div>
         <p style="color: var(--slate-600); font-size: 0.9rem; line-height: 1.6;">
-          Real-time circuit proof generation backed by local Midnight proof server and indexer providers.
+          Fully integrated with Lace Wallet connector API and local ZK Proof Server providers.
         </p>
       </div>
 
@@ -285,11 +278,11 @@
         <div class="card-header">
           <div class="card-title">
             <div class="card-icon">🌐</div>
-            Preprod Auditability
+            Preprod Verified Contract
           </div>
         </div>
         <p style="color: var(--slate-600); font-size: 0.9rem; line-height: 1.6;">
-          Venues maintain verifiable attendance statistics on-chain with contract address <code style="font-size:0.75rem; word-break:break-all;">0x187ab583926a5ff2e4819242a95edc8dfa8ff784</code>.
+          Deployed and verifiable on Midnight Preprod Testnet at <code style="font-size:0.75rem; word-break:break-all;">0x187ab583926a5ff2e4819242a95edc8dfa8ff784</code>.
         </p>
       </div>
     </section>
