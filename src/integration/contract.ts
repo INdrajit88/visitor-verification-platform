@@ -72,8 +72,7 @@ export class VisitorVerificationClient {
   }
 
   /**
-   * Strictly request connection approval from the user's browser wallet extension.
-   * Calls provider.enable() which triggers native Lace extension popup window.
+   * Safely connect to Midnight Lace Wallet browser extension.
    */
   public async connectWallet(): Promise<{ connected: boolean; walletAddress: string }> {
     const provider = this.getBrowserWalletProvider();
@@ -91,15 +90,37 @@ export class VisitorVerificationClient {
     }
 
     try {
-      // Trigger native extension approval popup
-      const api = typeof provider.enable === 'function' ? await provider.enable() : await provider();
+      let api: any = null;
+      if (typeof provider.enable === 'function') {
+        api = await provider.enable();
+      } else if (typeof provider.connect === 'function') {
+        api = await provider.connect();
+      } else if (typeof provider === 'function') {
+        api = await provider();
+      } else {
+        api = provider;
+      }
+
       this.walletApi = api;
 
-      const state = typeof api.state === 'function' ? await api.state() : api;
-      const address = state?.address || state?.coinPublicKey || state?.addressHex;
+      let state: any = null;
+      if (typeof api.state === 'function') {
+        state = await api.state();
+      } else if (typeof api.getState === 'function') {
+        state = await api.getState();
+      } else {
+        state = api;
+      }
+
+      const address =
+        state?.address ||
+        state?.coinPublicKey ||
+        state?.addressHex ||
+        state?.publicAddress ||
+        (typeof state === 'string' ? state : null);
 
       if (!address) {
-        throw new Error("Connected to wallet, but no address was returned by the extension.");
+        throw new Error("Connected to wallet extension, but could not retrieve public address.");
       }
 
       this.isConnected = true;
