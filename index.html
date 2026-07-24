@@ -191,7 +191,7 @@
           <div class="status-dot"></div>
           Midnight Preprod
         </div>
-        <button class="connect-btn" id="connectWalletBtn" onclick="toggleWallet()">Connect Wallet</button>
+        <button class="connect-btn" id="connectWalletBtn">Connect Wallet</button>
       </div>
     </div>
   </nav>
@@ -293,17 +293,6 @@
     <p>Visitor Verification Platform | Built with 💛 on <a href="https://midnight.network" target="_blank">Midnight Network</a> using Compact smart contracts.</p>
   </footer>
 
-  <script>
-    function toggleWallet() {
-      const btn = document.getElementById('connectWalletBtn');
-      if (btn.innerText === 'Connect Wallet') {
-        btn.innerText = '0x99A...F84';
-        btn.style.background = '#10b981';
-      } else {
-        btn.innerText = 'Connect Wallet';
-        btn.style.background = 'linear-gradient(135deg, var(--amber-500), var(--amber-600))';
-      }
-    }
-  </script>
+  <script type="module" src="/src/index.ts"></script>
 </body>
 </html>

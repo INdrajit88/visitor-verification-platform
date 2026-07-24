@@ -25,6 +25,7 @@ export class VisitorVerificationClient {
   private currentPasscode: Uint8Array | null = null;
   private isConnected: boolean = false;
   private connectedAddress: string | null = null;
+  private walletApi: any = null;
 
   constructor(address: string = CONTRACT_ADDRESS) {
     this.contractAddress = address;
@@ -55,42 +56,66 @@ export class VisitorVerificationClient {
   }
 
   /**
-   * Connect strictly to user's browser Midnight Lace Wallet extension.
-   * No fallback or demo accounts are used.
+   * Helper to detect installed Midnight/Lace browser extension providers.
+   */
+  public getBrowserWalletProvider(): any {
+    if (typeof window === 'undefined') return null;
+    const w = window as any;
+    return (
+      w.midnight?.mnLace ||
+      w.midnight?.lace ||
+      w.midnight?.dappConnector ||
+      w.lace?.midnight ||
+      w.cardano?.lace?.midnight ||
+      w.midnight
+    );
+  }
+
+  /**
+   * Strictly request connection approval from the user's browser wallet extension.
+   * Calls provider.enable() which triggers native Lace extension popup window.
    */
   public async connectWallet(): Promise<{ connected: boolean; walletAddress: string }> {
-    if (typeof window === 'undefined') {
-      throw new Error("Browser environment is required to connect wallet.");
-    }
+    const provider = this.getBrowserWalletProvider();
 
-    const midnightObj = (window as any).midnight;
-    const laceProvider = midnightObj?.mnLace || midnightObj?.lace;
-
-    if (!laceProvider) {
-      throw new Error("Midnight Lace Wallet extension not detected in your browser. Please install and enable the Midnight Lace Wallet browser extension to sign in.");
+    if (!provider) {
+      this.isConnected = false;
+      this.connectedAddress = null;
+      throw new Error(
+        "Midnight Lace Wallet extension was not detected in your browser.\n\n" +
+        "To connect your wallet:\n" +
+        "1. Install or enable the Midnight Lace Wallet browser extension.\n" +
+        "2. Ensure the extension is unlocked and configured for Midnight Preprod.\n" +
+        "3. Click 'Connect Wallet' again."
+      );
     }
 
     try {
-      const api = await laceProvider.enable();
-      const state = await api.state();
+      // Trigger native extension approval popup
+      const api = typeof provider.enable === 'function' ? await provider.enable() : await provider();
+      this.walletApi = api;
 
-      if (!state || !state.address) {
-        throw new Error("Wallet connected, but failed to retrieve wallet address.");
+      const state = typeof api.state === 'function' ? await api.state() : api;
+      const address = state?.address || state?.coinPublicKey || state?.addressHex;
+
+      if (!address) {
+        throw new Error("Connected to wallet, but no address was returned by the extension.");
       }
 
       this.isConnected = true;
-      this.connectedAddress = state.address;
-      return { connected: true, walletAddress: state.address };
+      this.connectedAddress = address;
+      return { connected: true, walletAddress: address };
     } catch (err: any) {
       this.isConnected = false;
       this.connectedAddress = null;
-      throw new Error(err?.message || "Wallet connection request was rejected or failed in browser extension.");
+      throw new Error(err?.message || "Wallet connection request was rejected or failed inside the extension popup.");
     }
   }
 
   public disconnectWallet(): { connected: boolean } {
     this.isConnected = false;
     this.connectedAddress = null;
+    this.walletApi = null;
     return { connected: false };
   }
 
@@ -100,7 +125,7 @@ export class VisitorVerificationClient {
 
   public async verifyCheckIn(verifierIdString: string): Promise<{ success: boolean; commitmentHex?: string; txHash?: string }> {
     if (!this.isConnected) {
-      throw new Error("Please connect your browser wallet before executing ZK check-in.");
+      throw new Error("Please connect your browser wallet extension before executing ZK check-in.");
     }
 
     const verifierIdBytes = new Uint8Array(32);
