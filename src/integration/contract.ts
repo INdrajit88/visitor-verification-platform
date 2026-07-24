@@ -67,6 +67,16 @@ export class VisitorVerificationClient {
     return { connected: true, walletAddress: demoAddress, mode: 'local' };
   }
 
+  public disconnectWallet(): { connected: boolean } {
+    this.isConnected = false;
+    this.connectedAddress = null;
+    return { connected: false };
+  }
+
+  public getWalletStatus(): { connected: boolean; address: string | null } {
+    return { connected: this.isConnected, address: this.connectedAddress };
+  }
+
   public async verifyCheckIn(verifierIdString: string): Promise<{ success: boolean; commitmentHex?: string; txHash?: string }> {
     const verifierIdBytes = new Uint8Array(32);
     const encoded = new TextEncoder().encode(verifierIdString);
