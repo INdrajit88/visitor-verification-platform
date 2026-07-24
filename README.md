@@ -55,7 +55,12 @@ npm test
 ```
 
 ## Initial Idea
-[LEAVE PLACEHOLDER — I will fill this in manually]
+The Visitor Verification Platform (VVP) was conceived to address critical privacy risks in modern physical and digital access management systems. Traditional visitor check-in mechanisms force guests to surrender sensitive personal data (such as government IDs, phone numbers, or unencrypted access codes) to centralized venue databases, exposing visitors to data breaches and unwanted tracking.
+
+VVP leverages Midnight's zero-knowledge smart contract framework (written in Compact) to decouple access verification from identity exposure:
+- **Zero-Knowledge Visitor Proofs**: Visitors prove they hold a valid passcode for a target venue directly inside a zero-knowledge circuit without ever writing their secret credential or identity to the public ledger.
+- **Verifiable Auditability**: Venues maintain an immutable, on-chain record of total verified check-ins and cryptographic commitment hashes without managing high-risk PII databases.
+- **Real-World Applications**: Ideal for corporate office guest check-ins, VIP event access control, restricted facility management, and privacy-first venue ticketing.
 
 ## Screenshots
-[LEAVE PLACEHOLDER — I will add compile output and contract address screenshots]
+![alt text](<Screenshot 2026-07-25 at 2.44.38 AM.png>)
