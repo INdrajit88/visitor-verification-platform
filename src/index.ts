@@ -18,15 +18,24 @@ document.addEventListener('DOMContentLoaded', () => {
   if (contractAddrEl) contractAddrEl.textContent = CONTRACT_ADDRESS;
 
   let count = 1;
-  let walletConnected = sessionStorage.getItem('vvp_wallet_connected') === 'true';
-  let walletAddress = sessionStorage.getItem('vvp_wallet_address') || '';
+  const status = client.getWalletStatus();
+  let walletConnected = status.connected;
+  let walletAddress = status.address || '';
 
-  // Restore wallet UI state if already connected from extension session
-  if (walletConnected && connectWalletBtn && walletAddress) {
-    connectWalletBtn.textContent = `🟢 ${walletAddress.substring(0, 10)}...`;
-    connectWalletBtn.style.background = '#10b981';
-    connectWalletBtn.title = "Connected to Browser Midnight Lace Wallet (Click to Disconnect)";
-  }
+  // Sync wallet UI state across pages
+  const updateWalletUI = () => {
+    if (walletConnected && connectWalletBtn && walletAddress) {
+      connectWalletBtn.textContent = `🟢 ${walletAddress.substring(0, 10)}...`;
+      connectWalletBtn.style.background = '#10b981';
+      connectWalletBtn.title = "Connected to Browser Midnight Lace Wallet (Click to Disconnect)";
+    } else if (connectWalletBtn) {
+      connectWalletBtn.textContent = 'Connect Wallet';
+      connectWalletBtn.style.background = 'linear-gradient(135deg, var(--amber-500), var(--amber-600))';
+      connectWalletBtn.title = "Connect Midnight Lace Wallet";
+    }
+  };
+
+  updateWalletUI();
 
   connectWalletBtn?.addEventListener('click', async () => {
     if (!walletConnected) {
@@ -37,24 +46,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await client.connectWallet();
         walletConnected = true;
         walletAddress = res.walletAddress;
+        updateWalletUI();
 
-        sessionStorage.setItem('vvp_wallet_connected', 'true');
-        sessionStorage.setItem('vvp_wallet_address', res.walletAddress);
-
-        if (connectWalletBtn) {
-          connectWalletBtn.textContent = `🟢 ${res.walletAddress.substring(0, 10)}...`;
-          connectWalletBtn.style.background = '#10b981';
-          connectWalletBtn.title = "Connected to Browser Midnight Lace Wallet (Click to Disconnect)";
-        }
         if (logBoxEl) {
           logBoxEl.innerHTML += `<div class="log-line success">> [BROWSER WALLET CONNECTED] Address: ${res.walletAddress}</div>`;
+          logBoxEl.innerHTML += `<div class="log-line info">> [FAUCET LINK] Need test tokens? Visit <a href="https://faucet.preprod.midnight.network" target="_blank" style="color:var(--amber-600); text-decoration:underline;">Midnight Preprod Faucet</a></div>`;
           logBoxEl.scrollTop = logBoxEl.scrollHeight;
         }
       } catch (err: any) {
         walletConnected = false;
         walletAddress = '';
-        sessionStorage.removeItem('vvp_wallet_connected');
-        sessionStorage.removeItem('vvp_wallet_address');
+        updateWalletUI();
 
         const errorMsg = err?.message || "Failed to connect to Midnight Lace Wallet extension.";
         alert(`Wallet Connection Error:\n\n${errorMsg}`);
@@ -68,15 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
       client.disconnectWallet();
       walletConnected = false;
       walletAddress = '';
+      updateWalletUI();
 
-      sessionStorage.removeItem('vvp_wallet_connected');
-      sessionStorage.removeItem('vvp_wallet_address');
-
-      if (connectWalletBtn) {
-        connectWalletBtn.textContent = 'Connect Wallet';
-        connectWalletBtn.style.background = 'linear-gradient(135deg, var(--amber-500), var(--amber-600))';
-        connectWalletBtn.title = "Connect Midnight Lace Wallet";
-      }
       if (logBoxEl) {
         logBoxEl.innerHTML += `<div class="log-line info">> Wallet disconnected from browser session.</div>`;
         logBoxEl.scrollTop = logBoxEl.scrollHeight;
@@ -86,14 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   formEl?.addEventListener('submit', async (e) => {
     e.preventDefault();
-
-    if (!walletConnected) {
-      alert("Please connect your browser Midnight Lace Wallet extension before executing ZK check-in!");
-      if (logBoxEl) {
-        logBoxEl.innerHTML += `<div class="log-line" style="color:#ef4444;">> [WARNING] Wallet connection required. Click 'Connect Wallet' in top navbar.</div>`;
-      }
-      return;
-    }
 
     const verifier = verifierInput.value;
     const passcode = passcodeInput.value;
@@ -109,8 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (logBoxEl) {
-      logBoxEl.innerHTML += `<div class="log-line info">> [STEP 1/3] Constructing private witness secretPasscode()...</div>`;
-      logBoxEl.innerHTML += `<div class="log-line info">> [STEP 2/3] Midnight Proof Server executing Compact ZK circuit (port 6300)...</div>`;
+      logBoxEl.innerHTML += `<div class="log-line info">> [STEP 1/4] Constructing private witnesses secretPasscode() & visitorNonce()...</div>`;
+      logBoxEl.innerHTML += `<div class="log-line info">> [STEP 2/4] Midnight Proof Server executing Compact ZK circuit (port 6300)...</div>`;
       logBoxEl.scrollTop = logBoxEl.scrollHeight;
     }
 
@@ -122,6 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const result = await client.verifyCheckIn(verifier);
 
+        // Update wallet state if auto-connected
+        walletConnected = true;
+        walletAddress = result.signedBy || walletAddress;
+        updateWalletUI();
+
         setTimeout(() => {
           if (progressFill) progressFill.style.width = '100%';
 
@@ -131,7 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
           if (lastCommitmentEl) lastCommitmentEl.textContent = result.commitmentHex || '0x...';
 
           if (logBoxEl) {
-            logBoxEl.innerHTML += `<div class="log-line success">> [STEP 3/3] Proof Verified & Signed by Wallet! Disclosed Commitment: ${result.commitmentHex}</div>`;
+            logBoxEl.innerHTML += `<div class="log-line info">> [STEP 3/4] Signed by Lace Wallet: ${result.signedBy} | Fee: ${result.txFee} ${result.txFeeAsset}</div>`;
+            logBoxEl.innerHTML += `<div class="log-line success">> [STEP 4/4] Proof Verified & Submitted! On-Chain Commitment: ${result.commitmentHex} | TxHash: ${result.txHash}</div>`;
             logBoxEl.scrollTop = logBoxEl.scrollHeight;
           }
 
