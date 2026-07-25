@@ -2,6 +2,7 @@
 > A privacy-preserving zero-knowledge visitor verification platform built on the Midnight Network using Compact smart contracts.
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel_Deployed-000000?style=flat-square&logo=vercel)](https://visitor-verification-platform.vercel.app/)
+[![Demo Video](https://img.shields.io/badge/YouTube-Demo_Video-FF0000?style=flat-square&logo=youtube)](https://youtu.be/rCD3mMkdK7A)
 [![Midnight Preprod](https://img.shields.io/badge/Network-Midnight_Preprod-8b5cf6?style=flat-square)](https://explorer.preprod.midnight.network)
 [![Compact Language](https://img.shields.io/badge/Compact-v0.5.1-06b6d4?style=flat-square)](https://midnight.network)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v22.23.1-10b981?style=flat-square)](https://nodejs.org)
@@ -9,14 +10,16 @@
 
 ---
 
-## 🚀 Live Demo & Repository
+## 🚀 Live Demo, Video & Repository
 - 🌐 **Live Web Application**: [https://visitor-verification-platform.vercel.app/](https://visitor-verification-platform.vercel.app/)
+- 📺 **YouTube Demo Video**: [https://youtu.be/rCD3mMkdK7A](https://youtu.be/rCD3mMkdK7A)
 - 📦 **GitHub Repository**: [https://github.com/INdrajit88/visitor-verification-platform](https://github.com/INdrajit88/visitor-verification-platform)
 
 ---
 
 ## 📋 Platform Capability Checklist
 - [x] **Live Demo Deployment**: [https://visitor-verification-platform.vercel.app/](https://visitor-verification-platform.vercel.app/)
+- [x] **Demo Video (Lace Wallet + ZK Circuit Execution)**: [https://youtu.be/rCD3mMkdK7A](https://youtu.be/rCD3mMkdK7A)
 - [x] **Public GitHub Repository**: [https://github.com/INdrajit88/visitor-verification-platform](https://github.com/INdrajit88/visitor-verification-platform)
 - [x] **Deployed Smart Contract**: `0x187ab583926a5ff2e4819242a95edc8dfa8ff784`
 - [x] **On-Chain Explorer Verification**: [Verify Contract on Midnight Preprod Explorer](https://explorer.preprod.midnight.network)
@@ -33,6 +36,7 @@
 | Environment | Location / Address | Verification / Explorer Link |
 |---|---|---|
 | **Live Web App** | `https://visitor-verification-platform.vercel.app/` | [Open Live App](https://visitor-verification-platform.vercel.app/) |
+| **Demo Video** | `https://youtu.be/rCD3mMkdK7A` | [Watch Video Demo](https://youtu.be/rCD3mMkdK7A) |
 | **Preprod Smart Contract** | `0x187ab583926a5ff2e4819242a95edc8dfa8ff784` | [Verify Contract on Midnight Preprod Explorer](https://explorer.preprod.midnight.network) |
 
 > [!NOTE]
