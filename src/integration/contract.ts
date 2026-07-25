@@ -56,25 +56,40 @@ export class VisitorVerificationClient {
   }
 
   /**
-   * Helper to detect installed Midnight/Lace browser extension providers.
+   * Helper to inspect window.midnight and return active DApp Connector API provider.
    */
   public getBrowserWalletProvider(): any {
     if (typeof window === 'undefined') return null;
     const w = window as any;
-    return (
-      w.midnight?.mnLace ||
-      w.midnight?.lace ||
-      w.midnight?.dappConnector ||
-      w.lace?.midnight ||
-      w.cardano?.lace?.midnight ||
-      w.midnight
-    );
+    const midnightObj = w.midnight;
+
+    if (!midnightObj) return null;
+
+    // Check specific known provider keys
+    if (midnightObj.mnLace) return midnightObj.mnLace;
+    if (midnightObj.lace) return midnightObj.lace;
+
+    // Search all injected properties under window.midnight
+    const keys = Object.keys(midnightObj);
+    for (const key of keys) {
+      const candidate = midnightObj[key];
+      if (candidate && (typeof candidate.connect === 'function' || typeof candidate.enable === 'function')) {
+        return candidate;
+      }
+    }
+
+    return midnightObj;
   }
 
   /**
-   * Safely connect to Midnight Lace Wallet browser extension.
+   * Connect strictly to user's browser Midnight Lace Wallet extension.
+   * Resolves address via official getUnshieldedAddress() or getShieldedAddresses() DApp Connector APIs.
    */
-  public async connectWallet(): Promise<{ connected: boolean; walletAddress: string }> {
+  public async connectWallet(): Promise<{ connected: boolean; walletAddress: string; walletName: string }> {
+    if (typeof window === 'undefined') {
+      throw new Error("Browser environment is required to connect wallet.");
+    }
+
     const provider = this.getBrowserWalletProvider();
 
     if (!provider) {
@@ -82,50 +97,87 @@ export class VisitorVerificationClient {
       this.connectedAddress = null;
       throw new Error(
         "Midnight Lace Wallet extension was not detected in your browser.\n\n" +
-        "To connect your wallet:\n" +
-        "1. Install or enable the Midnight Lace Wallet browser extension.\n" +
-        "2. Ensure the extension is unlocked and configured for Midnight Preprod.\n" +
-        "3. Click 'Connect Wallet' again."
+        "Please ensure:\n" +
+        "1. The Midnight Lace Wallet browser extension is installed.\n" +
+        "2. The extension is unlocked and enabled for this site.\n" +
+        "3. Your browser has the Midnight Lace Wallet extension active."
       );
     }
 
     try {
-      let api: any = null;
-      if (typeof provider.enable === 'function') {
-        api = await provider.enable();
-      } else if (typeof provider.connect === 'function') {
-        api = await provider.connect();
-      } else if (typeof provider === 'function') {
-        api = await provider();
-      } else {
-        api = provider;
+      let connectedApi: any = null;
+
+      // 1. Try DApp Connector API v4 connect('preprod')
+      if (typeof provider.connect === 'function') {
+        try {
+          connectedApi = await provider.connect('preprod');
+        } catch (e) {
+          connectedApi = await provider.connect();
+        }
+      } 
+      // 2. Try DApp Connector API v3 enable()
+      else if (typeof provider.enable === 'function') {
+        connectedApi = await provider.enable();
+      } 
+      else if (typeof provider === 'function') {
+        connectedApi = await provider();
+      } 
+      else {
+        connectedApi = provider;
       }
 
-      this.walletApi = api;
+      this.walletApi = connectedApi;
 
-      let state: any = null;
-      if (typeof api.state === 'function') {
-        state = await api.state();
-      } else if (typeof api.getState === 'function') {
-        state = await api.getState();
-      } else {
-        state = api;
+      // Resolve address from Connected API
+      let address: string | null = null;
+
+      // DApp Connector v4 getUnshieldedAddress()
+      if (typeof connectedApi.getUnshieldedAddress === 'function') {
+        try {
+          const res = await connectedApi.getUnshieldedAddress();
+          address = res?.unshieldedAddress || res?.address || (typeof res === 'string' ? res : null);
+        } catch (e) {
+          console.warn("getUnshieldedAddress failed, trying getShieldedAddresses", e);
+        }
       }
 
-      const address =
-        state?.address ||
-        state?.coinPublicKey ||
-        state?.addressHex ||
-        state?.publicAddress ||
-        (typeof state === 'string' ? state : null);
+      // DApp Connector v4 getShieldedAddresses()
+      if (!address && typeof connectedApi.getShieldedAddresses === 'function') {
+        try {
+          const res = await connectedApi.getShieldedAddresses();
+          address = res?.shieldedAddress || res?.shieldedCoinPublicKey || (typeof res === 'string' ? res : null);
+        } catch (e) {
+          console.warn("getShieldedAddresses failed", e);
+        }
+      }
 
+      // Legacy state() method
+      if (!address && typeof connectedApi.state === 'function') {
+        try {
+          const state = await connectedApi.state();
+          address = state?.address || state?.coinPublicKey || state?.unshieldedAddress || (typeof state === 'string' ? state : null);
+        } catch (e) {
+          console.warn("state() failed", e);
+        }
+      }
+
+      // Property fallbacks
       if (!address) {
-        throw new Error("Connected to wallet extension, but could not retrieve public address.");
+        address =
+          connectedApi?.address ||
+          connectedApi?.unshieldedAddress ||
+          connectedApi?.shieldedAddress ||
+          connectedApi?.coinPublicKey;
+      }
+
+      if (!address || typeof address !== 'string') {
+        throw new Error("Connected to Midnight Lace Wallet, but could not retrieve address. Make sure your Lace Wallet account is initialized.");
       }
 
       this.isConnected = true;
       this.connectedAddress = address;
-      return { connected: true, walletAddress: address };
+      const walletName = provider.name || "Midnight Lace Wallet";
+      return { connected: true, walletAddress: address, walletName };
     } catch (err: any) {
       this.isConnected = false;
       this.connectedAddress = null;
