@@ -1,6 +1,7 @@
 # Visitor Verification Platform (VVP)
 > A privacy-preserving zero-knowledge visitor verification platform built on the Midnight Network using Compact smart contracts.
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel_Deployed-000000?style=flat-square&logo=vercel)](https://visitor-verification-platform.vercel.app/)
 [![Midnight Preprod](https://img.shields.io/badge/Network-Midnight_Preprod-8b5cf6?style=flat-square)](https://explorer.preprod.midnight.network)
 [![Compact Language](https://img.shields.io/badge/Compact-v0.5.1-06b6d4?style=flat-square)](https://midnight.network)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v22.23.1-10b981?style=flat-square)](https://nodejs.org)
@@ -8,8 +9,15 @@
 
 ---
 
+## 🚀 Live Demo & Repository
+- 🌐 **Live Web Application**: [https://visitor-verification-platform.vercel.app/](https://visitor-verification-platform.vercel.app/)
+- 📦 **GitHub Repository**: [https://github.com/INdrajit88/visitor-verification-platform](https://github.com/INdrajit88/visitor-verification-platform)
+
+---
+
 ## 📋 Platform Capability Checklist
-- [x] **Public Repository**: [https://github.com/INdrajit88/visitor-verification-platform](https://github.com/INdrajit88/visitor-verification-platform)
+- [x] **Live Demo Deployment**: [https://visitor-verification-platform.vercel.app/](https://visitor-verification-platform.vercel.app/)
+- [x] **Public GitHub Repository**: [https://github.com/INdrajit88/visitor-verification-platform](https://github.com/INdrajit88/visitor-verification-platform)
 - [x] **Deployed Smart Contract**: `0x187ab583926a5ff2e4819242a95edc8dfa8ff784`
 - [x] **On-Chain Explorer Verification**: [Verify Contract on Midnight Preprod Explorer](https://explorer.preprod.midnight.network)
 - [x] **Browser Wallet Integration**: Directly connects to user's Midnight Lace Wallet (`window.midnight.mnLace` / `window.midnight.lace`)
@@ -21,13 +29,14 @@
 
 ---
 
-## Contract Deployment
-| Network | Contract Address | Explorer Verification Link |
+## Contract & Live Deployment Details
+| Environment | Location / Address | Verification / Explorer Link |
 |---|---|---|
-| **Preprod Testnet** | `0x187ab583926a5ff2e4819242a95edc8dfa8ff784` | [Verify Contract on Midnight Preprod Explorer](https://explorer.preprod.midnight.network) |
+| **Live Web App** | `https://visitor-verification-platform.vercel.app/` | [Open Live App](https://visitor-verification-platform.vercel.app/) |
+| **Preprod Smart Contract** | `0x187ab583926a5ff2e4819242a95edc8dfa8ff784` | [Verify Contract on Midnight Preprod Explorer](https://explorer.preprod.midnight.network) |
 
 > [!NOTE]
-> Deployed contract `0x187ab583926a5ff2e4819242a95edc8dfa8ff784` is live on Midnight Preprod Testnet and connected to the local ZK Proof Server running on port `6300`.
+> Deployed contract `0x187ab583926a5ff2e4819242a95edc8dfa8ff784` is live on Midnight Preprod Testnet and connected to the Midnight ZK Proof Service infrastructure.
 
 ---
 
@@ -112,5 +121,13 @@ Expected Output:
 
 ---
 
-## Platform Screenshot
-![Visitor Verification Platform Screenshot](screenshot.png)
+## 📸 Platform Screenshots
+
+### Visitor Verification Portal
+![Visitor Verification Portal](image.png)
+
+### ZK Proof Generation & Activity Log
+![ZK Proof Generation](image-1.png)
+
+### Multi-Page Dashboard & Explorer State
+![Multi-Page Dashboard](screenshot.png)
