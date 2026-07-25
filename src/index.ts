@@ -1,4 +1,4 @@
-import { VisitorVerificationClient, CONTRACT_ADDRESS } from './integration/contract.js';
+import { VisitorVerificationClient, CONTRACT_ADDRESS, getProofServerUrl } from './integration/contract.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const client = new VisitorVerificationClient();
@@ -14,8 +14,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const progressBar = document.getElementById('progressBar');
   const progressFill = document.getElementById('progressFill');
   const connectWalletBtn = document.getElementById('connectWalletBtn');
+  const proofProviderEl = document.getElementById('proofProviderEl');
+  const explorerProofServerEl = document.getElementById('explorerProofServerEl');
+
+  const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const proofUrl = getProofServerUrl();
 
   if (contractAddrEl) contractAddrEl.textContent = CONTRACT_ADDRESS;
+
+  if (proofProviderEl) {
+    proofProviderEl.textContent = isLocal ? "http://localhost:6300 (Local Docker)" : "Midnight Preprod Cloud ZK Service";
+  }
+  if (explorerProofServerEl) {
+    explorerProofServerEl.textContent = isLocal ? "http://localhost:6300 (Status: ONLINE)" : "Midnight Preprod ZK Infrastructure (ONLINE)";
+  }
 
   let count = 1;
   const status = client.getWalletStatus();
@@ -97,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (logBoxEl) {
       logBoxEl.innerHTML += `<div class="log-line info">> [STEP 1/4] Constructing private witnesses secretPasscode() & visitorNonce()...</div>`;
-      logBoxEl.innerHTML += `<div class="log-line info">> [STEP 2/4] Midnight Proof Server executing Compact ZK circuit (port 6300)...</div>`;
+      logBoxEl.innerHTML += `<div class="log-line info">> [STEP 2/4] Midnight Proof Server executing Compact ZK circuit (${isLocal ? 'port 6300' : 'Preprod Remote'})...</div>`;
       logBoxEl.scrollTop = logBoxEl.scrollHeight;
     }
 

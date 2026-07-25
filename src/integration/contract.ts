@@ -8,10 +8,17 @@ import { Contract, type Ledger, type Witnesses } from '../../managed/contract/in
  */
 export const CONTRACT_ADDRESS = "0x187ab583926a5ff2e4819242a95edc8dfa8ff784";
 
+export const getProofServerUrl = (): string => {
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return "https://indexer.preprod.midnight.network";
+  }
+  return "http://localhost:6300";
+};
+
 export const NETWORK_CONFIG = {
   networkId: "preprod",
   indexerUrl: "https://indexer.preprod.midnight.network",
-  proofServerUrl: "http://localhost:6300",
+  proofServerUrl: getProofServerUrl(),
   nodeUrl: "https://rpc.preprod.midnight.network",
   faucetUrl: "https://faucet.preprod.midnight.network"
 };
