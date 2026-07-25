@@ -8,7 +8,7 @@
     "dev": "vite",
     "compile": "compact compile contracts/counter.compact managed",
     "test": "vitest run",
-    "build": "tsc",
+    "build": "tsc && vite build",
     "deploy": "node --loader ts-node/esm src/integration/deploy.ts"
   },
   "dependencies": {
