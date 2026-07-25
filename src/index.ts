@@ -37,9 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sync wallet UI state across pages
   const updateWalletUI = () => {
     if (walletConnected && connectWalletBtn && walletAddress) {
-      connectWalletBtn.textContent = `🟢 ${walletAddress.substring(0, 10)}...`;
+      connectWalletBtn.textContent = `🟢 ${walletAddress.substring(0, 10)}... (Copy)`;
       connectWalletBtn.style.background = '#10b981';
-      connectWalletBtn.title = "Connected to Browser Midnight Lace Wallet (Click to Disconnect)";
+      connectWalletBtn.title = `Connected Address: ${walletAddress}\nClick to copy full address!`;
     } else if (connectWalletBtn) {
       connectWalletBtn.textContent = 'Connect Wallet';
       connectWalletBtn.style.background = 'linear-gradient(135deg, var(--amber-500), var(--amber-600))';
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateWalletUI();
 
         if (logBoxEl) {
-          logBoxEl.innerHTML += `<div class="log-line success">> [BROWSER WALLET CONNECTED] Address: ${res.walletAddress}</div>`;
+          logBoxEl.innerHTML += `<div class="log-line success">> [BROWSER WALLET CONNECTED] Full Address: ${res.walletAddress}</div>`;
           logBoxEl.innerHTML += `<div class="log-line info">> [FAUCET LINK] Need test tokens? Visit <a href="https://faucet.preprod.midnight.network" target="_blank" style="color:var(--amber-600); text-decoration:underline;">Midnight Preprod Faucet</a></div>`;
           logBoxEl.scrollTop = logBoxEl.scrollHeight;
         }
@@ -79,14 +79,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     } else {
-      client.disconnectWallet();
-      walletConnected = false;
-      walletAddress = '';
-      updateWalletUI();
-
-      if (logBoxEl) {
-        logBoxEl.innerHTML += `<div class="log-line info">> Wallet disconnected from browser session.</div>`;
-        logBoxEl.scrollTop = logBoxEl.scrollHeight;
+      // If connected, copy full address to clipboard
+      try {
+        await navigator.clipboard.writeText(walletAddress);
+        alert(`📋 Wallet Address Copied to Clipboard!\n\n${walletAddress}\n\nPaste this address into the Midnight Preprod Faucet (https://faucet.preprod.midnight.network) to receive test tokens.`);
+        if (logBoxEl) {
+          logBoxEl.innerHTML += `<div class="log-line success">> [COPIED] Wallet address copied to clipboard: ${walletAddress}</div>`;
+          logBoxEl.scrollTop = logBoxEl.scrollHeight;
+        }
+      } catch (e) {
+        alert(`Your Full Wallet Address:\n\n${walletAddress}`);
       }
     }
   });
