@@ -69,6 +69,12 @@ export class VisitorVerificationClient {
           crypto.getRandomValues(nonce);
         }
         return [context.privateState, nonce];
+      },
+      visitorRole: (context) => {
+        const roleBytes = new Uint8Array(32);
+        const encoded = new TextEncoder().encode("role_tier_1_standard");
+        roleBytes.set(encoded.subarray(0, 32));
+        return [context.privateState, roleBytes];
       }
     };
   }

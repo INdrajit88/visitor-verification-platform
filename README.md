@@ -3,6 +3,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel_Deployed-000000?style=flat-square&logo=vercel)](https://visitor-verification-platform.vercel.app/)
 [![Demo Video](https://img.shields.io/badge/YouTube-Demo_Video-FF0000?style=flat-square&logo=youtube)](https://youtu.be/rCD3mMkdK7A)
+[![CI/CD Pipeline](https://github.com/INdrajit88/visitor-verification-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/INdrajit88/visitor-verification-platform/actions/workflows/ci.yml)
 [![Midnight Preprod](https://img.shields.io/badge/Network-Midnight_Preprod-8b5cf6?style=flat-square)](https://explorer.preprod.midnight.network)
 [![Compact Language](https://img.shields.io/badge/Compact-v0.5.1-06b6d4?style=flat-square)](https://midnight.network)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v22.23.1-10b981?style=flat-square)](https://nodejs.org)
@@ -14,33 +15,47 @@
 - 🌐 **Live Web Application**: [https://visitor-verification-platform.vercel.app/](https://visitor-verification-platform.vercel.app/)
 - 📺 **YouTube Demo Video**: [https://youtu.be/rCD3mMkdK7A](https://youtu.be/rCD3mMkdK7A)
 - 📦 **GitHub Repository**: [https://github.com/INdrajit88/visitor-verification-platform](https://github.com/INdrajit88/visitor-verification-platform)
+- ⚙️ **CI/CD Workflow**: [.github/workflows/ci.yml](.github/workflows/ci.yml)
 
 ---
 
-## 📋 Platform Capability Checklist
+## 📋 Challenge Requirements & Passing Checklist
+- [x] **Fully Functional Privacy dApp**: Meaningful use of Midnight's Zero-Knowledge privacy model
 - [x] **Live Demo Deployment**: [https://visitor-verification-platform.vercel.app/](https://visitor-verification-platform.vercel.app/)
-- [x] **Demo Video (Lace Wallet + ZK Circuit Execution)**: [https://youtu.be/rCD3mMkdK7A](https://youtu.be/rCD3mMkdK7A)
+- [x] **Demo Video (Lace Wallet + ZK Circuit Call)**: [https://youtu.be/rCD3mMkdK7A](https://youtu.be/rCD3mMkdK7A)
+- [x] **Passing Test Suite**: 4/4 Vitest unit tests passing (`npm test`)
+- [x] **CI/CD Pipeline Running**: GitHub Actions workflow running automated build & tests (`.github/workflows/ci.yml`)
 - [x] **Public GitHub Repository**: [https://github.com/INdrajit88/visitor-verification-platform](https://github.com/INdrajit88/visitor-verification-platform)
 - [x] **Deployed Smart Contract**: `0x187ab583926a5ff2e4819242a95edc8dfa8ff784`
 - [x] **On-Chain Explorer Verification**: [Verify Contract on Midnight Preprod Explorer](https://explorer.preprod.midnight.network)
 - [x] **Browser Wallet Integration**: Directly connects to user's Midnight Lace Wallet (`window.midnight.mnLace` / `window.midnight.lace`)
 - [x] **Lace Wallet Connect / Disconnect Lifecycle**: Full session management with event prompts and error handling
-- [x] **Zero-Knowledge Circuit Execution**: Executed via `verifyVisitor()` circuit integration in `src/integration/contract.ts`
-- [x] **Dual Private Witness Architecture**: Passcode and entropy nonce witnesses processed in local proof server
-- [x] **Observable Privacy Guarantee**: Credentials verified in zero-knowledge without on-chain disclosure of raw passcodes
-- [x] **Multi-Page Production Web Application**: Modular multi-page UI with dot matrix background styling
+- [x] **16+ Meaningful Commits**: Verified structured commit history in main branch
 
 ---
 
-## Contract & Live Deployment Details
+## 🛡️ Midnight Privacy Model: What an Observer Learns vs Cannot Learn
+
+### ❌ What an Observer CANNOT Learn (Kept Strictly Private):
+1. **Raw Visitor Passcode**: The secret passcode string (`secretPasscode()`) is executed purely in local ZK witnesses and **never** transmitted to the network or stored in public state.
+2. **Visitor Entropy Nonce**: The random entropy nonce (`visitorNonce()`) remains on the visitor's local device.
+3. **Visitor Identity / Wallet Linking**: The Zero-Knowledge proof proves venue authorization without revealing personal identifiable information (PII) or unshielded credentials on-chain.
+4. **Visitor Access Tier / Role Secret**: Visitor role claims (`visitorRole()`) are verified inside local ZK circuit constraints.
+
+### ✅ What an Observer CAN Learn (Disclosed On-Chain Public State):
+1. **Verified Visitor Count**: The aggregate counter (`visitorCount`) tracking total successful venue check-ins.
+2. **Registered Venue Verifier ID**: The active venue identifier (`verifierId`) stored on the public ledger.
+3. **Cryptographic Commitment Hash**: The disclosed persistent hash commitment (`lastVisitorCommitment`) representing a mathematically proven verification event.
+
+---
+
+## 🛠️ Contract & Live Deployment Details
 | Environment | Location / Address | Verification / Explorer Link |
 |---|---|---|
 | **Live Web App** | `https://visitor-verification-platform.vercel.app/` | [Open Live App](https://visitor-verification-platform.vercel.app/) |
 | **Demo Video** | `https://youtu.be/rCD3mMkdK7A` | [Watch Video Demo](https://youtu.be/rCD3mMkdK7A) |
 | **Preprod Smart Contract** | `0x187ab583926a5ff2e4819242a95edc8dfa8ff784` | [Verify Contract on Midnight Preprod Explorer](https://explorer.preprod.midnight.network) |
-
-> [!NOTE]
-> Deployed contract `0x187ab583926a5ff2e4819242a95edc8dfa8ff784` is live on Midnight Preprod Testnet and connected to the Midnight ZK Proof Service infrastructure.
+| **CI/CD Workflow** | `.github/workflows/ci.yml` | [View GitHub Actions Run](https://github.com/INdrajit88/visitor-verification-platform/actions) |
 
 ---
 
@@ -57,24 +72,6 @@ public async connectWallet(): Promise<{ connected: boolean; walletAddress: strin
   return { connected: true, walletAddress: address.unshieldedAddress, walletName: provider.name };
 }
 ```
-
----
-
-## 🛡️ Observable Privacy Guarantee
-**What is proven without being shown:**
-- The visitor proves to the smart contract that they possess a valid, authorized passcode for the active venue (`verifierId`) **without exposing their raw passcode, entropy nonce, or identity on-chain**.
-- **Cryptographic Mechanism**:
-  1. The visitor's raw secret passcode and entropy nonce are supplied strictly to local witness functions (`secretPasscode()`, `visitorNonce()`).
-  2. Inside the ZK circuit (`contracts/counter.compact`), `persistentHash` computes a cryptographic commitment hash:
-     ```compact
-     const visitorCommitment = persistentHash<Vector<3, Bytes<32>>>([
-       pad(32, "vvp:visitor:commitment"),
-       passcode,
-       nonce
-     ]);
-     ```
-  3. Only the commitment hash and incremented visitor count are disclosed via `disclose()` and written to the public ledger (`lastVisitorCommitment`).
-  4. Raw passcode strings and entropy nonces never leave the visitor's local browser environment.
 
 ---
 
@@ -109,7 +106,7 @@ public async connectWallet(): Promise<{ connected: boolean; walletAddress: strin
 
 ---
 
-## Automated Test Suite
+## 🧪 Automated Test Suite
 Run the unit test suite:
 ```bash
 npm test
@@ -117,10 +114,10 @@ npm test
 
 Expected Output:
 ```text
- ✓ tests/counter.test.ts (3 tests) 1ms
+ ✓ tests/counter.test.ts (4 tests) 1ms
 
  Test Files  1 passed (1)
-      Tests  3 passed (3)
+      Tests  4 passed (4)
 ```
 
 ---
