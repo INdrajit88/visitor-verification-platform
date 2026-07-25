@@ -250,10 +250,28 @@ export class VisitorVerificationClient {
     txFee?: string;
     txFeeAsset?: string;
     signedBy?: string;
+    walletFunded?: boolean;
   }> {
     if (!this.isConnected) {
       // Auto trigger wallet connect if user clicks check-in
       await this.connectWallet();
+    }
+
+    let walletFunded = false;
+
+    // Check connected wallet Dust balance via DApp Connector API
+    if (this.walletApi) {
+      try {
+        if (typeof this.walletApi.getDustBalance === 'function') {
+          const dustRes = await this.walletApi.getDustBalance();
+          const dustBalance = dustRes?.balance ?? 0n;
+          if (BigInt(dustBalance) > 0n) {
+            walletFunded = true;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not retrieve Dust balance from wallet API:", e);
+      }
     }
 
     const verifierIdBytes = new Uint8Array(32);
@@ -271,7 +289,8 @@ export class VisitorVerificationClient {
       txHash: `0x_preprod_tx_${Date.now()}`,
       txFee: "0.0025",
       txFeeAsset: "tTDUST",
-      signedBy: this.connectedAddress || "Lace Wallet"
+      signedBy: this.connectedAddress || "Lace Wallet",
+      walletFunded
     };
   }
 }

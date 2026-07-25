@@ -135,7 +135,11 @@ document.addEventListener('DOMContentLoaded', () => {
           if (lastCommitmentEl) lastCommitmentEl.textContent = result.commitmentHex || '0x...';
 
           if (logBoxEl) {
-            logBoxEl.innerHTML += `<div class="log-line info">> [STEP 3/4] Signed by Lace Wallet: ${result.signedBy} | Fee: ${result.txFee} ${result.txFeeAsset}</div>`;
+            const feeStatusNote = result.walletFunded
+              ? `(Deducted from Lace Wallet Balance)`
+              : `(Note: Wallet unfunded. Get free test tokens at <a href="https://faucet.preprod.midnight.network" target="_blank" style="color:var(--amber-600); text-decoration:underline;">Midnight Faucet</a>)`;
+            
+            logBoxEl.innerHTML += `<div class="log-line info">> [STEP 3/4] Signed by Lace Wallet: ${result.signedBy} | Fee: ${result.txFee} ${result.txFeeAsset} ${feeStatusNote}</div>`;
             logBoxEl.innerHTML += `<div class="log-line success">> [STEP 4/4] Proof Verified & Submitted! On-Chain Commitment: ${result.commitmentHex} | TxHash: ${result.txHash}</div>`;
             logBoxEl.scrollTop = logBoxEl.scrollHeight;
           }
