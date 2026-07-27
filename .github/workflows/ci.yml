@@ -13,22 +13,23 @@ jobs:
   build-and-test:
     name: Build & Test Suite
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm ci
+        run: |
+          npm install
+          cd vvp && npm install
 
-      - name: TypeCheck & Build
+      - name: Build Vanilla TS Application
         run: npm run build
 
-      - name: Run Unit Tests
-        run: npm test
+      - name: Run Vitest Unit Tests
+        run: cd vvp && npm test

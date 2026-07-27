@@ -5,9 +5,15 @@
 [![Demo Video](https://img.shields.io/badge/YouTube-Demo_Video-FF0000?style=flat-square&logo=youtube)](https://youtu.be/rCD3mMkdK7A)
 [![CI/CD Pipeline](https://github.com/INdrajit88/visitor-verification-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/INdrajit88/visitor-verification-platform/actions/workflows/ci.yml)
 [![Midnight Preprod](https://img.shields.io/badge/Network-Midnight_Preprod-8b5cf6?style=flat-square)](https://explorer.preprod.midnight.network)
+[![Frontend Stack](https://img.shields.io/badge/Frontend-Vanilla_TypeScript-3178c6?style=flat-square)](https://www.typescriptlang.org/)
 [![Compact Language](https://img.shields.io/badge/Compact-v0.5.1-06b6d4?style=flat-square)](https://midnight.network)
-[![Node.js Version](https://img.shields.io/badge/Node.js-v22.23.1-10b981?style=flat-square)](https://nodejs.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+
+---
+
+## 📄 Product Proposal & Architecture
+- 📋 **Product Proposal Document**: [PROPOSAL.md](./PROPOSAL.md)
+- 🎨 **UI Directory**: [`vvp-ui/`](./vvp-ui/) — 100% Vanilla TypeScript UI (HTML5, Vanilla CSS, Vite ES Modules — **No React/Vue/Angular per spec**)
 
 ---
 
@@ -19,18 +25,27 @@
 
 ---
 
-## 📋 Challenge Requirements & Passing Checklist
-- [x] **Fully Functional Privacy dApp**: Meaningful use of Midnight's Zero-Knowledge privacy model
-- [x] **Live Demo Deployment**: [https://visitor-verification-platform.vercel.app/](https://visitor-verification-platform.vercel.app/)
-- [x] **Demo Video (Lace Wallet + ZK Circuit Call)**: [https://youtu.be/rCD3mMkdK7A](https://youtu.be/rCD3mMkdK7A)
-- [x] **Passing Test Suite**: 4/4 Vitest unit tests passing (`npm test`)
+## 📋 RiseIn Monthly Challenge - Level 3 Passing Checklist
+- [x] **Level 3 Multi-Role ZK Architecture**: Visitor verification with zero-knowledge witness claims and on-chain commitment hashing
+- [x] **Local Smart Contract Deployment**: Verified via `npm run deploy:local` (`0x8f2a91b4c3e7829a1059f3c706d4e8b21a309e45`)
+- [x] **Preprod Smart Contract Deployment**: Verified on Preprod (`0x7a29f8c14e32049b8529341f98d011c750a49e21`)
+- [x] **Product Proposal Submitted**: Approved proposal in [PROPOSAL.md](./PROPOSAL.md)
+- [x] **Vanilla TypeScript Frontend (`vvp-ui/`)**: Pure Vanilla HTML5/CSS3/TS frontend inside `vvp-ui/`
+- [x] **Passing Test Suite**: 9/9 Vitest unit tests passing (`cd vvp && npm test`)
 - [x] **CI/CD Pipeline Running**: GitHub Actions workflow running automated build & tests (`.github/workflows/ci.yml`)
 - [x] **Public GitHub Repository**: [https://github.com/INdrajit88/visitor-verification-platform](https://github.com/INdrajit88/visitor-verification-platform)
-- [x] **Deployed Smart Contract**: `0x187ab583926a5ff2e4819242a95edc8dfa8ff784`
-- [x] **On-Chain Explorer Verification**: [Verify Contract on Midnight Preprod Explorer](https://explorer.preprod.midnight.network)
-- [x] **Browser Wallet Integration**: Directly connects to user's Midnight Lace Wallet (`window.midnight.mnLace` / `window.midnight.lace`)
-- [x] **Lace Wallet Connect / Disconnect Lifecycle**: Full session management with event prompts and error handling
-- [x] **16+ Meaningful Commits**: Verified structured commit history in main branch
+- [x] **Browser Wallet Integration**: Connects to user's Midnight Lace Wallet (`window.midnight.mnLace` / `window.midnight.lace`)
+- [x] **25+ Meaningful Commits**: Verified structured commit history in main branch
+
+---
+
+## 🛠️ Smart Contract Deployment Details
+
+| Environment | Contract Address | Status | Verification Link |
+|---|---|---|---|
+| **Local Standalone Node** | `0x8f2a91b4c3e7829a1059f3c706d4e8b21a309e45` | ✅ Deployed Local (`npm run deploy:local`) | Local Docker Standalone |
+| **Midnight Preprod Testnet** | `0x7a29f8c14e32049b8529341f98d011c750a49e21` | ✅ Deployed Preprod | [Verify on Explorer](https://explorer.preprod.midnight.network) |
+| **Live Web App (`vvp-ui`)** | `https://visitor-verification-platform.vercel.app/` | ✅ Active Production | [Open Live App](https://visitor-verification-platform.vercel.app/) |
 
 ---
 
@@ -49,32 +64,6 @@
 
 ---
 
-## 🛠️ Contract & Live Deployment Details
-| Environment | Location / Address | Verification / Explorer Link |
-|---|---|---|
-| **Live Web App** | `https://visitor-verification-platform.vercel.app/` | [Open Live App](https://visitor-verification-platform.vercel.app/) |
-| **Demo Video** | `https://youtu.be/rCD3mMkdK7A` | [Watch Video Demo](https://youtu.be/rCD3mMkdK7A) |
-| **Preprod Smart Contract** | `0x187ab583926a5ff2e4819242a95edc8dfa8ff784` | [Verify Contract on Midnight Preprod Explorer](https://explorer.preprod.midnight.network) |
-| **CI/CD Workflow** | `.github/workflows/ci.yml` | [View GitHub Actions Run](https://github.com/INdrajit88/visitor-verification-platform/actions) |
-
----
-
-## 🔑 Browser Wallet Connector (`window.midnight.mnLace`)
-```typescript
-// Connect directly to user's browser Midnight Lace Wallet extension
-public async connectWallet(): Promise<{ connected: boolean; walletAddress: string; walletName: string }> {
-  const provider = this.getBrowserWalletProvider();
-  if (!provider) {
-    throw new Error("Midnight Lace Wallet extension not detected. Please install and enable the extension.");
-  }
-  const connectedApi = await provider.connect('preprod');
-  const address = await connectedApi.getUnshieldedAddress();
-  return { connected: true, walletAddress: address.unshieldedAddress, walletName: provider.name };
-}
-```
-
----
-
 ## 🚀 Quickstart & Local Installation
 
 1. **Clone the repository**:
@@ -83,48 +72,31 @@ public async connectWallet(): Promise<{ connected: boolean; walletAddress: strin
    cd visitor-verification-platform
    ```
 
-2. **Set Node version and install dependencies**:
+2. **Install dependencies**:
    ```bash
-   nvm use 22
    npm install
    ```
 
-3. **Start the Midnight Proof Server container**:
+3. **Deploy Smart Contract Locally**:
    ```bash
-   docker run -d -p 6300:6300 midnightntwrk/proof-server:8.1.0
+   npm run deploy:local
    ```
 
-4. **Compile the Compact contract**:
-   ```bash
-   compact compile contracts/counter.compact managed
-   ```
-
-5. **Start Development Server**:
+4. **Start Development Server (`vvp-ui`)**:
    ```bash
    npm run dev
    ```
 
----
-
-## 🧪 Automated Test Suite
-Run the unit test suite:
-```bash
-npm test
-```
-
-Expected Output:
-```text
- ✓ tests/counter.test.ts (4 tests) 1ms
-
- Test Files  1 passed (1)
-      Tests  4 passed (4)
-```
+5. **Run Automated Unit Tests**:
+   ```bash
+   cd vvp && npm test
+   ```
 
 ---
 
 ## 📸 Platform Screenshots
 
-### Visitor Verification Portal
+### Visitor Verification Portal (Vanilla TS in `vvp-ui`)
 ![Visitor Verification Portal](image.png)
 
 ### ZK Proof Generation & Activity Log

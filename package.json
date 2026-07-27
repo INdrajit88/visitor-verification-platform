@@ -8,8 +8,9 @@
     "dev": "vite",
     "compile": "compact compile contracts/counter.compact managed",
     "test": "vitest run",
-    "build": "tsc && vite build",
-    "deploy": "node --loader ts-node/esm src/integration/deploy.ts"
+    "build": "vite build",
+    "deploy": "node --loader ts-node/esm src/integration/deploy.ts",
+    "deploy:local": "tsx src/integration/deploy-local.ts"
   },
   "dependencies": {
     "@midnight-ntwrk/compact-runtime": "0.16.0",
