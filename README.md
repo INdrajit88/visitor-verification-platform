@@ -102,5 +102,5 @@
 ### ZK Proof Generation & Activity Log
 ![ZK Proof Generation](image-1.png)
 
-### Multi-Page Dashboard & Explorer State
+### Contract deploy ss
 ![Multi-Page Dashboard](screenshot.png)

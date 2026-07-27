@@ -24,12 +24,10 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: |
-          npm install
-          cd vvp && npm install
+        run: npm install
 
-      - name: Build Vanilla TS Application
+      - name: Build Application
         run: npm run build
 
-      - name: Run Vitest Unit Tests
-        run: cd vvp && npm test
+      - name: Run Unit Tests
+        run: npm test
