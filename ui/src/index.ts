@@ -102,50 +102,54 @@ class VVPApp {
     const windowMidnight = window as unknown as WindowMidnight;
     const laceProvider = windowMidnight.midnight?.mnLace || windowMidnight.midnight?.lace;
 
-    if (laceProvider) {
-      try {
-        connectBtn.innerText = 'Connecting Lace...';
-        this.appendLog('Requesting authorization from Midnight Lace Wallet...', 'info');
-
-        // Execute real DApp Connector enable request
-        const walletAPI = await laceProvider.enable();
-        const state = await walletAPI.state();
-        
-        const rawAddr = state?.coinPublicKey || state?.address || '0x7a29f8c14e32049b8529341f98d011c750a49e21';
-        this.walletAddress = rawAddr.startsWith('0x') ? rawAddr : '0x' + rawAddr;
-        this.isWalletConnected = true;
-
-        localStorage.setItem(STORAGE_KEYS.WALLET_CONNECTED, 'true');
-        localStorage.setItem(STORAGE_KEYS.WALLET_ADDRESS, this.walletAddress);
-
-        this.updateWalletButtonUI();
-        this.appendLog(`Midnight Lace Wallet Connected: ${this.walletAddress}`, 'success');
-      } catch (err) {
-        this.updateWalletButtonUI();
-        const msg = (err as Error)?.message || 'User rejected wallet connection request.';
-        this.appendLog(`Wallet Connection Error: ${msg}`, 'warning');
-        alert(`Midnight Lace Wallet Connection Failed:\n${msg}`);
-      }
-    } else {
-      // Midnight Lace Wallet Extension not detected in browser
-      connectBtn.innerText = 'Lace Not Installed';
-      this.appendLog('Midnight Lace Wallet extension not detected in browser window.midnight.', 'warning');
+    if (!laceProvider) {
+      // Midnight Lace Wallet Extension not detected in browser window.midnight
+      this.isWalletConnected = false;
+      this.walletAddress = '';
+      localStorage.setItem(STORAGE_KEYS.WALLET_CONNECTED, 'false');
+      localStorage.removeItem(STORAGE_KEYS.WALLET_ADDRESS);
       
-      const confirmDemo = confirm(
-        '⚠️ Midnight Lace Wallet extension not detected in your browser!\n\n' +
-        'Would you like to install Midnight Lace Wallet, or continue in Local Standalone Node mode for testing?'
+      this.updateWalletButtonUI();
+      this.appendLog('Midnight Lace Wallet extension not detected in window.midnight.', 'warning');
+      
+      alert(
+        '❌ Midnight Lace Wallet extension not detected!\n\n' +
+        'Please install the official Midnight Lace Wallet Chrome extension to connect your wallet to this dApp.'
       );
+      return;
+    }
 
-      if (confirmDemo) {
-        this.walletAddress = '0x8f2a...local_standalone';
-        this.isWalletConnected = true;
-        localStorage.setItem(STORAGE_KEYS.WALLET_CONNECTED, 'true');
-        localStorage.setItem(STORAGE_KEYS.WALLET_ADDRESS, this.walletAddress);
-        this.updateWalletButtonUI();
-        this.appendLog('Connected to Local Standalone Node environment.', 'info');
-      } else {
-        this.updateWalletButtonUI();
+    try {
+      connectBtn.innerText = 'Connecting Lace...';
+      this.appendLog('Requesting authorization from Midnight Lace Wallet...', 'info');
+
+      // Execute authentic DApp Connector enable request
+      const walletAPI = await laceProvider.enable();
+      const state = await walletAPI.state();
+      
+      const rawAddr = state?.coinPublicKey || state?.address;
+      if (!rawAddr) {
+        throw new Error('Lace Wallet is locked or did not provide an account public key.');
       }
+
+      this.walletAddress = rawAddr.startsWith('0x') ? rawAddr : '0x' + rawAddr;
+      this.isWalletConnected = true;
+
+      localStorage.setItem(STORAGE_KEYS.WALLET_CONNECTED, 'true');
+      localStorage.setItem(STORAGE_KEYS.WALLET_ADDRESS, this.walletAddress);
+
+      this.updateWalletButtonUI();
+      this.appendLog(`Midnight Lace Wallet Connected: ${this.walletAddress}`, 'success');
+    } catch (err) {
+      this.isWalletConnected = false;
+      this.walletAddress = '';
+      localStorage.setItem(STORAGE_KEYS.WALLET_CONNECTED, 'false');
+      localStorage.removeItem(STORAGE_KEYS.WALLET_ADDRESS);
+      
+      this.updateWalletButtonUI();
+      const msg = (err as Error)?.message || 'User rejected wallet connection request.';
+      this.appendLog(`Wallet Connection Error: ${msg}`, 'warning');
+      alert(`Midnight Lace Wallet Connection Failed:\n${msg}`);
     }
   }
 
