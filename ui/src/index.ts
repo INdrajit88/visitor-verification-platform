@@ -12,24 +12,41 @@ async function sha256Hex(message: string): Promise<string> {
 }
 
 // Persistent Storage Keys
+// Persistent Storage Keys
 const STORAGE_KEYS = {
   VISITOR_COUNT: 'vvp_visitor_count',
   LAST_COMMITMENT: 'vvp_last_commitment',
   VENUE_ID: 'vvp_venue_id',
-  WALLET_CONNECTED: 'vvp_wallet_connected'
+  WALLET_CONNECTED: 'vvp_wallet_connected',
+  WALLET_ADDRESS: 'vvp_wallet_address'
 };
+
+interface MidnightLaceProvider {
+  enable: () => Promise<{
+    state: () => Promise<{ coinPublicKey?: string; address?: string }>;
+  }>;
+}
+
+interface WindowMidnight {
+  midnight?: {
+    mnLace?: MidnightLaceProvider;
+    lace?: MidnightLaceProvider;
+  };
+}
 
 class VVPApp {
   private visitorCount: number;
   private lastCommitment: string;
   private venueId: string;
   private isWalletConnected: boolean;
+  private walletAddress: string;
 
   constructor() {
     this.visitorCount = parseInt(localStorage.getItem(STORAGE_KEYS.VISITOR_COUNT) || '1', 10);
     this.lastCommitment = localStorage.getItem(STORAGE_KEYS.LAST_COMMITMENT) || '0x6d795f7365637265745f76697369746f';
     this.venueId = localStorage.getItem(STORAGE_KEYS.VENUE_ID) || 'venue_stadium_gate_a';
     this.isWalletConnected = localStorage.getItem(STORAGE_KEYS.WALLET_CONNECTED) === 'true';
+    this.walletAddress = localStorage.getItem(STORAGE_KEYS.WALLET_ADDRESS) || '';
 
     this.initUI();
     this.bindEvents();
@@ -71,29 +88,64 @@ class VVPApp {
     if (!connectBtn) return;
 
     if (this.isWalletConnected) {
+      // Disconnect
       this.isWalletConnected = false;
+      this.walletAddress = '';
       localStorage.setItem(STORAGE_KEYS.WALLET_CONNECTED, 'false');
+      localStorage.removeItem(STORAGE_KEYS.WALLET_ADDRESS);
       this.updateWalletButtonUI();
+      this.appendLog('Wallet disconnected.', 'info');
       return;
     }
 
-    // Check for Midnight Lace Wallet Extension
-    const midnightObj = (window as unknown as { midnight?: { mnLace?: unknown; lace?: unknown } }).midnight;
-    if (midnightObj && (midnightObj.mnLace || midnightObj.lace)) {
-      connectBtn.innerText = 'Connecting Lace...';
-      setTimeout(() => {
+    // Access injected Midnight Lace Wallet provider
+    const windowMidnight = window as unknown as WindowMidnight;
+    const laceProvider = windowMidnight.midnight?.mnLace || windowMidnight.midnight?.lace;
+
+    if (laceProvider) {
+      try {
+        connectBtn.innerText = 'Connecting Lace...';
+        this.appendLog('Requesting authorization from Midnight Lace Wallet...', 'info');
+
+        // Execute real DApp Connector enable request
+        const walletAPI = await laceProvider.enable();
+        const state = await walletAPI.state();
+        
+        const rawAddr = state?.coinPublicKey || state?.address || '0x7a29f8c14e32049b8529341f98d011c750a49e21';
+        this.walletAddress = rawAddr.startsWith('0x') ? rawAddr : '0x' + rawAddr;
         this.isWalletConnected = true;
+
         localStorage.setItem(STORAGE_KEYS.WALLET_CONNECTED, 'true');
+        localStorage.setItem(STORAGE_KEYS.WALLET_ADDRESS, this.walletAddress);
+
         this.updateWalletButtonUI();
-      }, 800);
+        this.appendLog(`Midnight Lace Wallet Connected: ${this.walletAddress}`, 'success');
+      } catch (err) {
+        this.updateWalletButtonUI();
+        const msg = (err as Error)?.message || 'User rejected wallet connection request.';
+        this.appendLog(`Wallet Connection Error: ${msg}`, 'warning');
+        alert(`Midnight Lace Wallet Connection Failed:\n${msg}`);
+      }
     } else {
-      // Simulate connection if extension isn't present
-      connectBtn.innerText = 'Connecting...';
-      setTimeout(() => {
+      // Midnight Lace Wallet Extension not detected in browser
+      connectBtn.innerText = 'Lace Not Installed';
+      this.appendLog('Midnight Lace Wallet extension not detected in browser window.midnight.', 'warning');
+      
+      const confirmDemo = confirm(
+        '⚠️ Midnight Lace Wallet extension not detected in your browser!\n\n' +
+        'Would you like to install Midnight Lace Wallet, or continue in Local Standalone Node mode for testing?'
+      );
+
+      if (confirmDemo) {
+        this.walletAddress = '0x8f2a...local_standalone';
         this.isWalletConnected = true;
         localStorage.setItem(STORAGE_KEYS.WALLET_CONNECTED, 'true');
+        localStorage.setItem(STORAGE_KEYS.WALLET_ADDRESS, this.walletAddress);
         this.updateWalletButtonUI();
-      }, 600);
+        this.appendLog('Connected to Local Standalone Node environment.', 'info');
+      } else {
+        this.updateWalletButtonUI();
+      }
     }
   }
 
@@ -102,10 +154,11 @@ class VVPApp {
     if (!connectBtn) return;
 
     if (this.isWalletConnected) {
-      connectBtn.innerText = '⚡ 0x9a4f...3c82';
+      const shortAddr = this.walletAddress ? `${this.walletAddress.slice(0, 6)}...${this.walletAddress.slice(-4)}` : 'Connected';
+      connectBtn.innerText = `⚡ ${shortAddr}`;
       connectBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
     } else {
-      connectBtn.innerText = 'Connect Wallet';
+      connectBtn.innerText = 'Connect Midnight Wallet';
       connectBtn.style.background = 'linear-gradient(135deg, var(--amber-500), var(--amber-600))';
     }
   }
