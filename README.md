@@ -13,7 +13,7 @@
 
 ## 📄 Product Proposal & Architecture
 - 📋 **Product Proposal Document**: [PROPOSAL.md](./PROPOSAL.md)
-- 🎨 **UI Directory**: [`vvp-ui/`](./vvp-ui/) — 100% Vanilla TypeScript UI (HTML5, Vanilla CSS, Vite ES Modules — **No React/Vue/Angular per spec**)
+- 🎨 **UI Directory**: [`ui/`](./ui/) — 100% Vanilla TypeScript UI (HTML5, Vanilla CSS, Vite ES Modules — **No React/Vue/Angular per spec**)
 
 ---
 
@@ -30,8 +30,8 @@
 - [x] **Local Smart Contract Deployment**: Verified via `npm run deploy:local` (`0x8f2a91b4c3e7829a1059f3c706d4e8b21a309e45`)
 - [x] **Preprod Smart Contract Deployment**: Verified on Preprod (`0x7a29f8c14e32049b8529341f98d011c750a49e21`)
 - [x] **Product Proposal Submitted**: Approved proposal in [PROPOSAL.md](./PROPOSAL.md)
-- [x] **Vanilla TypeScript Frontend (`vvp-ui/`)**: Pure Vanilla HTML5/CSS3/TS frontend inside `vvp-ui/`
-- [x] **Passing Test Suite**: 9/9 Vitest unit tests passing (`cd vvp && npm test`)
+- [x] **Vanilla TypeScript Frontend (`ui/`)**: Pure Vanilla HTML5/CSS3/TS frontend inside `ui/`
+- [x] **Passing Test Suite**: 9/9 Vitest unit tests passing (`npm test`)
 - [x] **CI/CD Pipeline Running**: GitHub Actions workflow running automated build & tests (`.github/workflows/ci.yml`)
 - [x] **Public GitHub Repository**: [https://github.com/INdrajit88/visitor-verification-platform](https://github.com/INdrajit88/visitor-verification-platform)
 - [x] **Browser Wallet Integration**: Connects to user's Midnight Lace Wallet (`window.midnight.mnLace` / `window.midnight.lace`)
@@ -45,7 +45,7 @@
 |---|---|---|---|
 | **Local Standalone Node** | `0x8f2a91b4c3e7829a1059f3c706d4e8b21a309e45` | ✅ Deployed Local (`npm run deploy:local`) | Local Docker Standalone |
 | **Midnight Preprod Testnet** | `0x7a29f8c14e32049b8529341f98d011c750a49e21` | ✅ Deployed Preprod | [Verify on Explorer](https://explorer.preprod.midnight.network) |
-| **Live Web App (`vvp-ui`)** | `https://visitor-verification-platform.vercel.app/` | ✅ Active Production | [Open Live App](https://visitor-verification-platform.vercel.app/) |
+| **Live Web App (`ui`)** | `https://visitor-verification-platform.vercel.app/` | ✅ Active Production | [Open Live App](https://visitor-verification-platform.vercel.app/) |
 
 ---
 
@@ -82,21 +82,21 @@
    npm run deploy:local
    ```
 
-4. **Start Development Server (`vvp-ui`)**:
+4. **Start Development Server (`ui`)**:
    ```bash
    npm run dev
    ```
 
 5. **Run Automated Unit Tests**:
    ```bash
-   cd vvp && npm test
+   npm test
    ```
 
 ---
 
 ## 📸 Platform Screenshots
 
-### Visitor Verification Portal (Vanilla TS in `vvp-ui`)
+### Visitor Verification Portal (Vanilla TS in `ui/`)
 ![Visitor Verification Portal](image.png)
 
 ### ZK Proof Generation & Activity Log
